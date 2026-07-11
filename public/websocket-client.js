@@ -1,6 +1,6 @@
 /* ============================================================
-   StadiumAI Hub — WebSocket Client
-   Real-time data synchronization with backend
+   StadiumAI Hub — WebSocket Client (Netlify-compatible polling)
+   Real-time data synchronization using polling for Netlify Functions
    ============================================================ */
 
 (function () {
@@ -14,83 +14,57 @@
       this.maxReconnectAttempts = 5;
       this.reconnectDelay = 3000;
       this.listeners = {};
+      this.pollingInterval = null;
+      this.pollingDelay = 5000; // 5 seconds
     }
 
     connect() {
       try {
-        // Connect to the same host as the current page
-        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-        const host = window.location.host;
-        const wsUrl = `${protocol}//${host}`;
-        
-        console.log(`📡 Connecting to WebSocket server at ${wsUrl}`);
-        
-        this.socket = io(wsUrl, {
-          transports: ['websocket', 'polling'],
-          reconnection: true,
-          reconnectionDelay: 1000,
-          reconnectionAttempts: this.maxReconnectAttempts
-        });
-
-        this.setupEventHandlers();
+        // Use polling instead of WebSocket for Netlify compatibility
+        console.log('📡 Using polling mode for Netlify Functions');
+        this.connected = true;
+        this.startPolling();
+        this.emit('connected');
       } catch (error) {
-        console.error('WebSocket connection error:', error);
+        console.error('Connection error:', error);
         this.handleReconnect();
       }
     }
 
+    startPolling() {
+      if (this.pollingInterval) {
+        clearInterval(this.pollingInterval);
+      }
+
+      // Poll for data updates
+      this.pollingInterval = setInterval(() => {
+        this.fetchUpdates();
+      }, this.pollingDelay);
+
+      // Initial fetch
+      this.fetchUpdates();
+    }
+
+    async fetchUpdates() {
+      try {
+        // Fetch all data endpoints
+        const [crowdData, gatesData, matchesData] = await Promise.all([
+          fetch('/api/crowd/density').then(r => r.json()),
+          fetch('/api/gates/status').then(r => r.json()),
+          fetch('/api/matches/live').then(r => r.json())
+        ]);
+
+        // Emit updates
+        this.emit('crowdUpdate', crowdData);
+        this.emit('gatesUpdate', gatesData);
+        this.emit('matchesUpdate', matchesData);
+      } catch (error) {
+        console.error('Error fetching updates:', error);
+      }
+    }
+
     setupEventHandlers() {
-      if (!this.socket) return;
-
-      this.socket.on('connect', () => {
-        console.log('✅ WebSocket connected');
-        this.connected = true;
-        this.reconnectAttempts = 0;
-        this.emit('connected');
-      });
-
-      this.socket.on('disconnect', (reason) => {
-        console.log('❌ WebSocket disconnected:', reason);
-        this.connected = false;
-        this.emit('disconnected', reason);
-      });
-
-      this.socket.on('connect_error', (error) => {
-        console.error('WebSocket connection error:', error);
-        this.emit('error', error);
-      });
-
-      this.socket.on('reconnect', (attemptNumber) => {
-        console.log(`🔄 WebSocket reconnected after ${attemptNumber} attempts`);
-        this.emit('reconnected', attemptNumber);
-      });
-
-      this.socket.on('reconnect_attempt', (attemptNumber) => {
-        console.log(`🔄 WebSocket reconnection attempt ${attemptNumber}`);
-        this.emit('reconnecting', attemptNumber);
-      });
-
-      this.socket.on('reconnect_failed', () => {
-        console.error('❌ WebSocket reconnection failed');
-        this.emit('reconnectFailed');
-      });
-
-      // Data event handlers
-      this.socket.on('crowd:update', (data) => {
-        this.emit('crowdUpdate', data);
-      });
-
-      this.socket.on('gates:update', (data) => {
-        this.emit('gatesUpdate', data);
-      });
-
-      this.socket.on('matches:update', (data) => {
-        this.emit('matchesUpdate', data);
-      });
-
-      this.socket.on('role:confirmed', (role) => {
-        this.emit('roleConfirmed', role);
-      });
+      // Not needed for polling mode
     }
 
     on(event, callback) {
@@ -117,20 +91,23 @@
     }
 
     send(event, data) {
-      if (!this.socket || !this.connected) {
-        console.warn('Cannot send message: WebSocket not connected');
-        return false;
+      // For role switching in polling mode
+      if (event === 'role:switch') {
+        console.log('Role switch:', data);
+        this.emit('roleConfirmed', data);
+        return true;
       }
       
-      this.socket.emit(event, data);
-      return true;
+      console.warn('Cannot send message: Polling mode does not support bidirectional communication');
+      return false;
     }
 
     disconnect() {
-      if (this.socket) {
-        this.socket.disconnect();
-        this.connected = false;
+      if (this.pollingInterval) {
+        clearInterval(this.pollingInterval);
+        this.pollingInterval = null;
       }
+      this.connected = false;
     }
 
     isConnected() {
