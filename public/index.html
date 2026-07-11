@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="StadiumAI Hub — GenAI-powered real-time stadium operations and fan experience platform for FIFA World Cup 2026. AI navigation, crowd intelligence, multilingual assistance, and operational decision support.">
+  <meta name="keywords" content="FIFA World Cup 2026, Stadium AI, Crowd Management, Fan Experience, GenAI, Smart Stadium">
+  <meta name="author" content="StadiumAI">
+  <meta name="theme-color" content="#05060f">
+  <title>StadiumAI Hub — FIFA World Cup 2026</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏟️</text></svg>">
+  
+  <!-- Animation Libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+</head>
+<body>
+  <div class="app-layout" id="appLayout">
+
+    <!-- ========== SIDEBAR ========== -->
+    <aside class="sidebar" id="sidebar" role="navigation" aria-label="Main Navigation">
+      <div class="sidebar-brand">
+        <div class="brand-icon">🏟️</div>
+        <div class="brand-text">
+          <h1>StadiumAI</h1>
+          <span>FIFA World Cup 2026</span>
+        </div>
+      </div>
+
+      <!-- Role Selector -->
+      <div class="role-selector">
+        <label>View As</label>
+        <div class="role-buttons">
+          <button class="role-btn active" data-role="fan" id="roleFan">👤 Fan</button>
+          <button class="role-btn" data-role="staff" id="roleStaff">🛡️ Staff</button>
+          <button class="role-btn" data-role="organizer" id="roleOrganizer">📊 Org</button>
+        </div>
+      </div>
+
+      <!-- Navigation Menu -->
+      <ul class="nav-menu" id="navMenu">
+        <li class="nav-section-label">Main</li>
+        <li class="nav-item">
+          <div class="nav-link active" data-section="overview" id="navOverview">
+            <span class="nav-icon">📊</span>
+            <span>Overview</span>
+          </div>
+        </li>
+        <li class="nav-item">
+          <div class="nav-link" data-section="crowd" id="navCrowd">
+            <span class="nav-icon">🔥</span>
+            <span>Crowd Intel</span>
+            <span class="nav-badge" id="crowdAlertBadge" style="display:none;">!</span>
+          </div>
+        </li>
+        <li class="nav-item">
+          <div class="nav-link" data-section="navigation" id="navNavigation">
+            <span class="nav-icon">🗺️</span>
+            <span>Navigation</span>
+          </div>
+        </li>
+
+        <li class="nav-section-label">Services</li>
+        <li class="nav-item">
+          <div class="nav-link" data-section="transport" id="navTransport">
+            <span class="nav-icon">🚗</span>
+            <span>Transport</span>
+          </div>
+        </li>
+        <li class="nav-item">
+          <div class="nav-link" data-section="translator" id="navTranslator">
+            <span class="nav-icon">🌍</span>
+            <span>Translator</span>
+          </div>
+        </li>
+        <li class="nav-item">
+          <div class="nav-link" data-section="sustainability" id="navSustainability">
+            <span class="nav-icon">🌱</span>
+            <span>Sustainability</span>
+          </div>
+        </li>
+
+        <li class="nav-section-label" data-role-visible="staff organizer">Operations</li>
+        <li class="nav-item" data-role-visible="staff organizer">
+          <div class="nav-link" data-section="operations" id="navOperations">
+            <span class="nav-icon">📋</span>
+            <span>Operations</span>
+            <span class="nav-badge" id="opsAlertBadge">3</span>
+          </div>
+        </li>
+      </ul>
+
+      <!-- Sidebar Footer -->
+      <div class="sidebar-footer">
+        <button class="settings-btn" id="settingsBtn" aria-label="Open Settings">
+          <span class="nav-icon">⚙️</span>
+          <span>Settings</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- ========== MAIN CONTENT ========== -->
+    <main class="main-content">
+
+      <!-- Top Header -->
+      <header class="top-header">
+        <div class="header-left">
+          <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle Menu">☰</button>
+          <h2 class="page-title" id="pageTitle">Overview</h2>
+        </div>
+
+        <!-- Match Ticker -->
+        <div class="match-ticker" aria-label="Live Match Scores">
+          <div class="ticker-track" id="tickerTrack">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+
+        <!-- Header Actions -->
+        <div class="header-actions">
+          <div class="live-indicator">
+            <span class="live-dot"></span>
+            <span>LIVE</span>
+          </div>
+          <button class="header-btn" id="notifBtn" aria-label="Notifications">
+            🔔
+            <span class="notif-dot"></span>
+          </button>
+          <button class="header-btn" id="chatToggleBtn" aria-label="Open AI Assistant">
+            🤖
+          </button>
+        </div>
+      </header>
+
+      <!-- Dashboard Content -->
+      <div class="dashboard-content" id="dashboardContent">
+
+        <!-- ===== OVERVIEW SECTION ===== -->
+        <section class="section-panel active" id="sectionOverview" aria-label="Overview Dashboard">
+          <!-- Stats Row -->
+          <div class="stats-grid" id="overviewStats">
+            <div class="stat-card purple">
+              <div class="stat-icon purple">👥</div>
+              <div class="stat-label">Total Attendance</div>
+              <div class="stat-value" id="statAttendance">67,842</div>
+              <div class="stat-change up">↑ 94% capacity</div>
+            </div>
+            <div class="stat-card blue">
+              <div class="stat-icon blue">🚪</div>
+              <div class="stat-label">Active Gates</div>
+              <div class="stat-value" id="statGates">12/14</div>
+              <div class="stat-change neutral">2 maintenance</div>
+            </div>
+            <div class="stat-card teal">
+              <div class="stat-icon teal">🌡️</div>
+              <div class="stat-label">Avg Wait Time</div>
+              <div class="stat-value" id="statWaitTime">4.2m</div>
+              <div class="stat-change down">↓ 18% vs last match</div>
+            </div>
+            <div class="stat-card gold">
+              <div class="stat-icon gold">⚡</div>
+              <div class="stat-label">AI Queries Today</div>
+              <div class="stat-value" id="statQueries">2,847</div>
+              <div class="stat-change up">↑ 32% engagement</div>
+            </div>
+          </div>
+
+          <!-- Main Grid -->
+          <div class="grid-2-1">
+            <!-- Crowd Mini Heatmap -->
+            <div class="glass-card">
+              <div class="card-header">
+                <div class="card-title"><span class="icon">🔥</span> Crowd Density Overview</div>
+                <span class="card-badge badge-live">● Live</span>
+              </div>
+              <div class="heatmap-container">
+                <div class="heatmap-grid" id="miniHeatmap">
+                  <!-- Populated by JS -->
+                </div>
+                <div class="heatmap-legend">
+                  <div class="legend-title">Density Scale</div>
+                  <div class="legend-scale">
+                    <div class="legend-item"><div class="legend-color density-0"></div> Empty</div>
+                    <div class="legend-item"><div class="legend-color density-2"></div> Low</div>
+                    <div class="legend-item"><div class="legend-color density-4"></div> Moderate</div>
+                    <div class="legend-item"><div class="legend-color density-6"></div> High</div>
+                    <div class="legend-item"><div class="legend-color density-8"></div> Critical</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- AI Insight + Gate Status -->
+            <div style="display:flex;flex-direction:column;gap:var(--space-5);">
+              <div class="glass-card">
+                <div class="card-header">
+                  <div class="card-title"><span class="icon">🤖</span> AI Insight</div>
+                </div>
+                <div class="ai-insight" id="aiInsightOverview">
+                  <span class="insight-label">Real-time Analysis</span>
+                  <strong>Gate A3 congestion detected.</strong> Crowd density in North Stand Zone B has increased 24% in the last 10 minutes. Recommend opening auxiliary Gate A4 and redirecting incoming fans via the East Concourse. Estimated relief time: 8 minutes.
+                </div>
+              </div>
+
+              <div class="glass-card">
+                <div class="card-header">
+                  <div class="card-title"><span class="icon">🚪</span> Gate Utilization</div>
+                </div>
+                <div class="gate-bars" id="gateBars">
+                  <!-- Populated by JS -->
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Actions for Fans -->
+          <div class="glass-card" data-role-visible="fan">
+            <div class="card-header">
+              <div class="card-title"><span class="icon">⚡</span> Quick Actions</div>
+            </div>
+            <div class="stats-grid">
+              <div class="transport-card" style="cursor:pointer;" onclick="window.app.navigateTo('navigation')">
+                <div class="transport-icon">🗺️</div>
+                <div class="transport-title">Find My Seat</div>
+                <div class="transport-detail">Interactive stadium map</div>
+              </div>
+              <div class="transport-card" style="cursor:pointer;" onclick="window.app.navigateTo('transport')">
+                <div class="transport-icon">🚗</div>
+                <div class="transport-title">Plan My Exit</div>
+                <div class="transport-detail">Smart departure planning</div>
+              </div>
+              <div class="transport-card" style="cursor:pointer;" onclick="window.app.navigateTo('translator')">
+                <div class="transport-icon">🌍</div>
+                <div class="transport-title">Translate</div>
+                <div class="transport-detail">Instant phrase translation</div>
+              </div>
+              <div class="transport-card" style="cursor:pointer;" onclick="document.getElementById('chatToggleBtn').click()">
+                <div class="transport-icon">🤖</div>
+                <div class="transport-title">Ask AI</div>
+                <div class="transport-detail">Your match day assistant</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Live Match Schedule -->
+          <div class="glass-card">
+            <div class="card-header">
+              <div class="card-title"><span class="icon">⚽</span> Live Matches Today</div>
+              <span class="card-badge badge-live">● Live</span>
+            </div>
+            <div class="match-list" id="overviewMatches">
+              <div class="match-item">
+                <div class="match-teams">
+                  <span class="team">🇧🇷 Brazil</span>
+                  <span class="match-score">2 - 1</span>
+                  <span class="team">🇩🇪 Germany</span>
+                </div>
+                <div class="match-info">
+                  <span class="match-time">67'</span>
+                  <span class="match-venue">MetLife Stadium</span>
+                </div>
+              </div>
+              <div class="match-item">
+                <div class="match-teams">
+                  <span class="team">🇦🇷 Argentina</span>
+                  <span class="match-score">1 - 1</span>
+                  <span class="team">🇫🇷 France</span>
+                </div>
+                <div class="match-info">
+                  <span class="match-time">54'</span>
+                  <span class="match-venue">SoFi Stadium</span>
+                </div>
+              </div>
+              <div class="match-item">
+                <div class="match-teams">
+                  <span class="team">🇮🇹 Italy</span>
+                  <span class="match-score">2 - 2</span>
+                  <span class="team">🇭🇷 Croatia</span>
+                </div>
+                <div class="match-info">
+                  <span class="match-time">88'</span>
+                  <span class="match-venue">Mercedes-Benz</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Stadium Conditions -->
+          <div class="grid-2">
+            <div class="glass-card">
+              <div class="card-header">
+                <div class="card-title"><span class="icon">🌡️</span> Weather</div>
+              </div>
+              <div class="weather-display">
+                <div class="weather-main">
+                  <span class="weather-icon">☀️</span>
+                  <span class="weather-temp">72°F</span>
+                </div>
+                <div class="weather-details">
+                  <div class="weather-item">
+                    <span class="weather-label">Humidity</span>
+                    <span class="weather-value">45%</span>
+                  </div>
+                  <div class="weather-item">
+                    <span class="weather-label">Wind</span>
+                    <span class="weather-value">8 mph</span>
+                  </div>
+                  <div class="weather-item">
+                    <span class="weather-label">UV Index</span>
+                    <span class="weather-value">Moderate</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="glass-card">
+              <div class="card-header">
+                <div class="card-title"><span class="icon">🌱</span> Sustainability</div>
+              </div>
+              <div class="sustainability-metrics">
+                <div class="sust-metric">
+                  <div class="sust-label">Recycling Rate</div>
+                  <div class="sust-value">78%</div>
+                  <div class="sust-bar">
+                    <div class="sust-fill" style="width: 78%;"></div>
+                  </div>
+                </div>
+                <div class="sust-metric">
+                  <div class="sust-label">Water Saved</div>
+                  <div class="sust-value">12.4K L</div>
+                  <div class="sust-bar">
+                    <div class="sust-fill" style="width: 65%;"></div>
+                  </div>
+                </div>
+                <div class="sust-metric">
+                  <div class="sust-label">Solar Power</div>
+                  <div class="sust-value">42%</div>
+                  <div class="sust-bar">
+                    <div class="sust-fill" style="width: 42%;"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===== CROWD INTELLIGENCE ===== -->
+        <section class="section-panel" id="sectionCrowd" aria-label="Crowd Intelligence">
+          <div class="section-heading">
+            <div>
+              <div class="section-title">🔥 Crowd Intelligence</div>
+              <div class="section-subtitle">Real-time density monitoring across all stadium zones</div>
+            </div>
+            <span class="card-badge badge-live">● Live Data</span>
+          </div>
+
+          <!-- Crowd Stats -->
+          <div class="stats-grid">
+            <div class="stat-card green">
+              <div class="stat-icon green">✅</div>
+              <div class="stat-label">Safe Zones</div>
+              <div class="stat-value" id="safeZones">18</div>
+            </div>
+            <div class="stat-card gold">
+              <div class="stat-icon gold">⚠️</div>
+              <div class="stat-label">Warning Zones</div>
+              <div class="stat-value" id="warningZones">4</div>
+            </div>
+            <div class="stat-card red">
+              <div class="stat-icon red">🚨</div>
+              <div class="stat-label">Critical Zones</div>
+              <div class="stat-value" id="criticalZones">1</div>
+            </div>
+            <div class="stat-card blue">
+              <div class="stat-icon blue">📊</div>
+              <div class="stat-label">Avg Density</div>
+              <div class="stat-value" id="avgDensity">72%</div>
+            </div>
+          </div>
+
+          <div class="grid-2-1">
+            <!-- Full Heatmap -->
+            <div class="glass-card">
+              <div class="card-header">
+                <div class="card-title"><span class="icon">🗺️</span> Zone Density Heatmap</div>
+              </div>
+              <div class="heatmap-container">
+                <div class="heatmap-grid" id="fullHeatmap" style="grid-template-columns: repeat(8, 1fr);">
+                  <!-- Populated by JS -->
+                </div>
+                <div class="heatmap-legend">
+                  <div class="legend-title">Density Scale</div>
+                  <div class="legend-scale">
+                    <div class="legend-item"><div class="legend-color density-0"></div> 0-10%</div>
+                    <div class="legend-item"><div class="legend-color density-1"></div> 10-25%</div>
+                    <div class="legend-item"><div class="legend-color density-2"></div> 25-40%</div>
+                    <div class="legend-item"><div class="legend-color density-3"></div> 40-55%</div>
+                    <div class="legend-item"><div class="legend-color density-4"></div> 55-65%</div>
+                    <div class="legend-item"><div class="legend-color density-5"></div> 65-75%</div>
+                    <div class="legend-item"><div class="legend-color density-6"></div> 75-85%</div>
+                    <div class="legend-item"><div class="legend-color density-7"></div> 85-95%</div>
+                    <div class="legend-item"><div class="legend-color density-8"></div> 95-100%</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Gate Utilization Full -->
+            <div class="glass-card">
+              <div class="card-header">
+                <div class="card-title"><span class="icon">🚪</span> Gate Flow Analysis</div>
+              </div>
+              <div class="gate-bars" id="gateBarsFull">
+                <!-- Populated by JS -->
+              </div>
+              <div class="ai-insight mt-4" id="aiInsightCrowd">
+                <span class="insight-label">AI Prediction</span>
+                <strong>Halftime surge expected in 12 minutes.</strong> Based on current match tempo and historical patterns, a 35% increase in concourse traffic is predicted. Food court zones C2-C4 will reach 90%+ capacity. Pre-positioning 6 additional staff to concessions recommended.
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===== NAVIGATION ===== -->
+        <section class="section-panel" id="sectionNavigation" aria-label="Stadium Navigation">
+          <div class="section-heading">
+            <div>
+              <div class="section-title">🗺️ Stadium Navigation</div>
+              <div class="section-subtitle">Interactive map with accessibility routing and points of interest</div>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <!-- Stadium Map -->
+            <div class="glass-card">
+              <div class="card-header">
+                <div class="card-title"><span class="icon">🏟️</span> Stadium Map</div>
+                <span class="card-badge badge-live">Interactive</span>
+              </div>
+              <div class="stadium-map-wrapper" id="stadiumMapContainer">
+                <!-- SVG rendered by JS -->
+              </div>
+            </div>
+
+            <!-- Zone Info & POIs -->
+            <div style="display:flex;flex-direction:column;gap:var(--space-5);">
+              <div class="zone-info-panel" id="zoneInfoPanel">
+                <div class="zone-info-title">📍 Select a Zone</div>
+                <p style="font-size:0.85rem;color:var(--text-muted);">Click on any zone in the stadium map to view details including crowd density, nearest facilities, and accessibility information.</p>
+              </div>
+
+              <div class="glass-card">
+                <div class="card-header">
+                  <div class="card-title"><span class="icon">📍</span> Points of Interest</div>
+                </div>
+                <div class="poi-list" id="poiList">
+                  <div class="poi-item">
+                    <div class="poi-icon">🍔</div>
+                    <div class="poi-info">
+                      <div class="poi-name">Food Court North</div>
+                      <div class="poi-detail">Level 2, Near Gate B</div>
+                    </div>
+                    <span class="poi-status busy">Busy</span>
+                  </div>
+                  <div class="poi-item">
+                    <div class="poi-icon">🚻</div>
+                    <div class="poi-info">
+                      <div class="poi-name">Restrooms East Wing</div>
+                      <div class="poi-detail">Level 1, Section E1-E3</div>
+                    </div>
+                    <span class="poi-status open">Available</span>
+                  </div>
+                  <div class="poi-item">
+                    <div class="poi-icon">🏥</div>
+                    <div class="poi-info">
+                      <div class="poi-name">First Aid Station</div>
+                      <div class="poi-detail">Level 1, Gate A Lobby</div>
+                    </div>
+                    <span class="poi-status open">Open</span>
+                  </div>
+                  <div class="poi-item">
+                    <div class="poi-icon">♿</div>
+                    <div class="poi-info">
+                      <div class="poi-name">Accessible Entrance</div>
+                      <div class="poi-detail">Gate D, Ramp Access</div>
+                    </div>
+                    <span class="poi-status open">Open</span>
+                  </div>
+                  <div class="poi-item">
+                    <div class="poi-icon">🛍️</div>
+                    <div class="poi-info">
+                      <div class="poi-name">Official Merch Store</div>
+                      <div class="poi-detail">Level 1, Main Concourse</div>
+                    </div>
+                    <span class="poi-status busy">Busy</span>
+                  </div>
+                  <div class="poi-item">
+                    <div class="poi-icon">👶</div>
+                    <div class="poi-info">
+                      <div class="poi-name">Family Zone</div>
+                      <div class="poi-detail">Level 2, West Stand</div>
+                    </div>
+                    <span class="poi-status open">Available</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===== TRANSPORTATION ===== -->
+        <section class="section-panel" id="sectionTransport" aria-label="Transportation Hub">
+          <div class="section-heading">
+            <div>
+              <div class="section-title">🚗 Transportation Hub</div>
+              <div class="section-subtitle">Real-time parking, transit, and rideshare intelligence</div>
+            </div>
+          </div>
+
+          <div class="stats-grid">
+            <div class="stat-card blue">
+              <div class="stat-icon blue">🅿️</div>
+              <div class="stat-label">Parking Available</div>
+              <div class="stat-value" id="parkingAvail">1,247</div>
+              <div class="stat-change down">↓ 340 in last 30min</div>
+            </div>
+            <div class="stat-card teal">
+              <div class="stat-icon teal">🚇</div>
+              <div class="stat-label">Next Metro</div>
+              <div class="stat-value" id="nextMetro">3 min</div>
+              <div class="stat-change neutral">Line A — On time</div>
+            </div>
+            <div class="stat-card gold">
+              <div class="stat-icon gold">🚕</div>
+              <div class="stat-label">Rideshare Surge</div>
+              <div class="stat-value" id="rideshare">1.4x</div>
+              <div class="stat-change up">↑ Moderate demand</div>
+            </div>
+            <div class="stat-card green">
+              <div class="stat-icon green">🚌</div>
+              <div class="stat-label">Shuttle Status</div>
+              <div class="stat-value" id="shuttleStatus">Active</div>
+              <div class="stat-change neutral">Every 8 min</div>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <!-- Parking Lots -->
+            <div class="glass-card">
+              <div class="card-header">
+                <div class="card-title"><span class="icon">🅿️</span> Parking Lots</div>
+              </div>
+              <div class="gate-bars" id="parkingBars">
+                <!-- Populated by JS -->
+              </div>
+            </div>
+
+            <!-- AI Recommendation -->
+            <div class="glass-card">
+              <div class="card-header">
+                <div class="card-title"><span class="icon">🤖</span> Smart Departure Plan</div>
+              </div>
+              <div class="ai-insight" id="aiInsightTransport">
+                <span class="insight-label">AI Recommendation</span>
+                <strong>Best departure window: 85th minute.</strong> Based on current traffic patterns and match flow, leaving at the 85th minute reduces your exit time by ~22 minutes. Recommended route: Exit via Gate D → Lot C (currently 34% full) → Highway 101 North. Alternate: Metro Line A departs every 3 minutes post-match with extra carriages.
+              </div>
+              <div class="transport-grid mt-4">
+                <div class="transport-card">
+                  <div class="transport-icon">🕐</div>
+                  <div class="transport-title">Leave at 85'</div>
+                  <div class="transport-status" style="color:var(--success);">~12 min exit</div>
+                  <div class="transport-detail">Low congestion</div>
+                </div>
+                <div class="transport-card">
+                  <div class="transport-icon">🕐</div>
+                  <div class="transport-title">Leave at FT</div>
+                  <div class="transport-status" style="color:var(--warning);">~34 min exit</div>
+                  <div class="transport-detail">High congestion</div>
+                </div>
+                <div class="transport-card">
+                  <div class="transport-icon">🕐</div>
+                  <div class="transport-title">Leave FT+15</div>
+                  <div class="transport-status" style="color:var(--success);">~18 min exit</div>
+                  <div class="transport-detail">Moderate traffic</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===== TRANSLATOR ===== -->
+        <section class="section-panel" id="sectionTranslator" aria-label="Multilingual Translator">
+          <div class="section-heading">
+            <div>
+              <div class="section-title">🌍 Multilingual Translator</div>
+              <div class="section-subtitle">AI-powered real-time translation for match day conversations</div>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <!-- Translator -->
+            <div class="glass-card">
+              <div class="card-header">
+                <div class="card-title"><span class="icon">🔄</span> Translate</div>
+              </div>
+              <div class="translator-container">
+                <div class="translator-header">
+                  <select class="lang-select" id="langFrom">
+                    <option value="en">🇺🇸 English</option>
+                    <option value="es">🇪🇸 Spanish</option>
+                    <option value="fr">🇫🇷 French</option>
+                    <option value="ar">🇸🇦 Arabic</option>
+                    <option value="pt">🇧🇷 Portuguese</option>
+                    <option value="de">🇩🇪 German</option>
+                    <option value="ja">🇯🇵 Japanese</option>
+                    <option value="ko">🇰🇷 Korean</option>
+                    <option value="zh">🇨🇳 Chinese</option>
+                    <option value="hi">🇮🇳 Hindi</option>
+                  </select>
+                  <button class="lang-swap-btn" id="langSwapBtn" aria-label="Swap Languages">⇄</button>
+                  <select class="lang-select" id="langTo">
+                    <option value="es">🇪🇸 Spanish</option>
+                    <option value="en">🇺🇸 English</option>
+                    <option value="fr">🇫🇷 French</option>
+                    <option value="ar">🇸🇦 Arabic</option>
+                    <option value="pt">🇧🇷 Portuguese</option>
+                    <option value="de">🇩🇪 German</option>
+                    <option value="ja">🇯🇵 Japanese</option>
+                    <option value="ko">🇰🇷 Korean</option>
+                    <option value="zh">🇨🇳 Chinese</option>
+                    <option value="hi">🇮🇳 Hindi</option>
+                  </select>
+                </div>
+                <textarea class="translator-input" id="translatorInput" placeholder="Type text to translate..." rows="3"></textarea>
+                <button class="translate-btn" id="translateBtn">Translate with AI ✨</button>
+                <textarea class="translator-output" id="translatorOutput" placeholder="Translation will appear here..." rows="3" readonly></textarea>
+              </div>
+            </div>
+
+            <!-- Quick Phrase Cards -->
+            <div class="glass-card">
+              <div class="card-header">
+                <div class="card-title"><span class="icon">💬</span> Quick Phrases</div>
+              </div>
+              <div class="phrase-cards" id="phraseCards">
+                <!-- Populated by JS -->
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===== SUSTAINABILITY ===== -->
+        <section class="section-panel" id="sectionSustainability" aria-label="Sustainability Dashboard">
+          <div class="section-heading">
+            <div>
+              <div class="section-title">🌱 Sustainability Command Center</div>
+              <div class="section-subtitle">Environmental impact tracking and green operations</div>
+            </div>
+          </div>
+
+          <div class="stats-grid">
+            <div class="stat-card green">
+              <div class="stat-icon green">♻️</div>
+              <div class="stat-label">Recycling Rate</div>
+              <div class="stat-value" id="recycleRate">78%</div>
+              <div class="stat-change up">↑ 5% vs target</div>
+            </div>
+            <div class="stat-card blue">
+              <div class="stat-icon blue">💧</div>
+              <div class="stat-label">Water Saved</div>
+              <div class="stat-value" id="waterSaved">12.4K L</div>
+              <div class="stat-change up">↑ Rainwater reuse</div>
+            </div>
+            <div class="stat-card teal">
+              <div class="stat-icon teal">⚡</div>
+              <div class="stat-label">Solar Power</div>
+              <div class="stat-value" id="solarPower">42%</div>
+              <div class="stat-change up">↑ Of total energy</div>
+            </div>
+            <div class="stat-card gold">
+              <div class="stat-icon gold">🌿</div>
+              <div class="stat-label">Carbon Offset</div>
+              <div class="stat-value" id="carbonOffset">86 T</div>
+              <div class="stat-change neutral">On track</div>
+            </div>
+          </div>
+
+          <div class="grid-3">
+            <!-- Waste Management -->
+            <div class="glass-card">
+              <div class="card-header">
+                <div class="card-title"><span class="icon">🗑️</span> Waste Management</div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:var(--space-4);">
+                <div>
+                  <div style="display:flex;justify-content:space-between;margin-bottom:var(--space-2);">
+                    <span style="font-size:0.8rem;">Recycling</span>
+                    <span style="font-size:0.8rem;color:var(--success);font-weight:700;" id="wasteRecycle">78%</span>
+                  </div>
+                  <div class="progress-bar"><div class="progress-fill green" id="wasteRecycleBar" style="width:78%;"></div></div>
+                </div>
+                <div>
+                  <div style="display:flex;justify-content:space-between;margin-bottom:var(--space-2);">
+                    <span style="font-size:0.8rem;">Composting</span>
+                    <span style="font-size:0.8rem;color:var(--teal-400);font-weight:700;" id="wasteCompost">45%</span>
+                  </div>
+                  <div class="progress-bar"><div class="progress-fill teal" id="wasteCompostBar" style="width:45%;"></div></div>
+                </div>
+                <div>
+                  <div style="display:flex;justify-content:space-between;margin-bottom:var(--space-2);">
+                    <span style="font-size:0.8rem;">Landfill Diversion</span>
+                    <span style="font-size:0.8rem;color:var(--blue-400);font-weight:700;" id="wasteLandfill">89%</span>
+                  </div>
+                  <div class="progress-bar"><div class="progress-fill blue" id="wasteLandfillBar" style="width:89%;"></div></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Energy -->
+            <div class="glass-card">
+              <div class="card-header">
+                <div class="card-title"><span class="icon">⚡</span> Energy Mix</div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:var(--space-4);">
+                <div>
+                  <div style="display:flex;justify-content:space-between;margin-bottom:var(--space-2);">
+                    <span style="font-size:0.8rem;">Solar</span>
+                    <span style="font-size:0.8rem;color:var(--accent-400);font-weight:700;">42%</span>
+                  </div>
+                  <div class="progress-bar"><div class="progress-fill gold" style="width:42%;"></div></div>
+                </div>
+                <div>
+                  <div style="display:flex;justify-content:space-between;margin-bottom:var(--space-2);">
+                    <span style="font-size:0.8rem;">Wind</span>
+                    <span style="font-size:0.8rem;color:var(--teal-400);font-weight:700;">18%</span>
+                  </div>
+                  <div class="progress-bar"><div class="progress-fill teal" style="width:18%;"></div></div>
+                </div>
+                <div>
+                  <div style="display:flex;justify-content:space-between;margin-bottom:var(--space-2);">
+                    <span style="font-size:0.8rem;">Grid (Traditional)</span>
+                    <span style="font-size:0.8rem;color:var(--text-muted);font-weight:700;">40%</span>
+                  </div>
+                  <div class="progress-bar"><div class="progress-fill purple" style="width:40%;"></div></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- AI Sustainability Insight -->
+            <div class="glass-card">
+              <div class="card-header">
+                <div class="card-title"><span class="icon">🤖</span> AI Recommendations</div>
+              </div>
+              <div class="ai-insight" id="aiInsightSustain">
+                <span class="insight-label">Sustainability AI</span>
+                <strong>Bin capacity alert in Section D.</strong> Smart waste sensors indicate bins at 82% capacity in Food Court South. Dispatching waste collection crew now. Additionally, switching to LED-only lighting in unused concourse areas could save 340 kWh for the remainder of this event.
+              </div>
+              <div style="margin-top:var(--space-4);display:flex;flex-direction:column;gap:var(--space-2);">
+                <div style="font-size:0.78rem;color:var(--text-muted);">Today's Impact Score</div>
+                <div style="font-family:var(--font-display);font-size:2rem;font-weight:800;color:var(--success);">A+</div>
+                <div style="font-size:0.72rem;color:var(--text-muted);">Top 5% of all FIFA 2026 match days</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===== OPERATIONS ===== -->
+        <section class="section-panel" id="sectionOperations" aria-label="Operations Center" data-role-visible="staff organizer">
+          <div class="section-heading">
+            <div>
+              <div class="section-title">📋 Operations Command Center</div>
+              <div class="section-subtitle">Staff-only incident management and deployment overview</div>
+            </div>
+            <span class="card-badge badge-warning">3 Active Incidents</span>
+          </div>
+
+          <!-- Ops Stats -->
+          <div class="stats-grid">
+            <div class="stat-card purple">
+              <div class="stat-icon purple">👷</div>
+              <div class="stat-label">Staff On Duty</div>
+              <div class="stat-value" id="staffOnDuty">342</div>
+            </div>
+            <div class="stat-card gold">
+              <div class="stat-icon gold">📋</div>
+              <div class="stat-label">Open Tasks</div>
+              <div class="stat-value" id="openTasks">17</div>
+            </div>
+            <div class="stat-card red">
+              <div class="stat-icon red">🚨</div>
+              <div class="stat-label">Active Incidents</div>
+              <div class="stat-value" id="activeIncidents">3</div>
+            </div>
+            <div class="stat-card green">
+              <div class="stat-icon green">✅</div>
+              <div class="stat-label">Resolved Today</div>
+              <div class="stat-value" id="resolvedToday">24</div>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <!-- Incident Feed -->
+            <div class="glass-card">
+              <div class="card-header">
+                <div class="card-title"><span class="icon">🚨</span> Incident Feed</div>
+                <span class="card-badge badge-live">● Live</span>
+              </div>
+              <div class="incident-feed" id="incidentFeed">
+                <!-- Populated by JS -->
+              </div>
+            </div>
+
+            <!-- Staff Deployment -->
+            <div style="display:flex;flex-direction:column;gap:var(--space-5);">
+              <div class="glass-card">
+                <div class="card-header">
+                  <div class="card-title"><span class="icon">👷</span> Staff Deployment</div>
+                </div>
+                <div class="staff-grid" id="staffGrid">
+                  <!-- Populated by JS -->
+                </div>
+              </div>
+
+              <div class="glass-card">
+                <div class="card-header">
+                  <div class="card-title"><span class="icon">🤖</span> AI Task Priority</div>
+                </div>
+                <div class="ai-insight" id="aiInsightOps">
+                  <span class="insight-label">Operations AI</span>
+                  <strong>Priority redeployment needed.</strong> Medical incident in Section F requires 2 additional first responders. Nearest available: Team 7 (currently idle at Gate B, ETA 2 min) and Team 12 (post shift at Lot C, ETA 4 min). Auto-dispatching Team 7 with highest urgency.
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </div><!-- /dashboard-content -->
+    </main>
+
+    <!-- ========== AI CHAT PANEL ========== -->
+    <aside class="chat-panel" id="chatPanel" role="complementary" aria-label="AI Assistant">
+      <div class="chat-header">
+        <div class="chat-header-left">
+          <div class="chat-avatar">🤖</div>
+          <div class="chat-header-info">
+            <h3>StadiumAI Assistant</h3>
+            <span><span class="live-dot" style="width:6px;height:6px;"></span> Online — Gemini Powered</span>
+          </div>
+        </div>
+        <button class="chat-close" id="chatCloseBtn" aria-label="Close Chat">✕</button>
+      </div>
+
+      <div class="chat-quick-actions" id="chatQuickActions">
+        <button class="quick-action" data-query="Where is the nearest restroom?">🚻 Restrooms</button>
+        <button class="quick-action" data-query="What food options are available?">🍔 Food</button>
+        <button class="quick-action" data-query="How do I get to my seat Section B Row 12?">💺 Find Seat</button>
+        <button class="quick-action" data-query="What is the best way to exit the stadium?">🚗 Exit Plan</button>
+        <button class="quick-action" data-query="Is there wheelchair accessibility near Gate A?">♿ Accessibility</button>
+        <button class="quick-action" data-query="What is the current crowd level?">👥 Crowd Info</button>
+      </div>
+
+      <div class="chat-messages" id="chatMessages">
+        <!-- Welcome Message -->
+        <div class="chat-message ai">
+          <div class="msg-avatar">🤖</div>
+          <div>
+            <div class="msg-bubble">
+              Welcome to <strong>StadiumAI</strong>! 🏟️ I'm your FIFA World Cup 2026 match day assistant powered by Google Gemini. I can help you with:<br><br>
+              🗺️ <strong>Navigation</strong> — Find your seat, restrooms, food<br>
+              🚗 <strong>Transport</strong> — Parking, metro, exit planning<br>
+              ♿ <strong>Accessibility</strong> — Wheelchair routes, services<br>
+              🌍 <strong>Translations</strong> — Multilingual assistance<br>
+              📊 <strong>Live Updates</strong> — Crowd, scores, weather<br><br>
+              How can I help you today?
+            </div>
+            <div class="msg-time">Just now</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="chat-input-area">
+        <div class="chat-input-wrapper">
+          <select class="chat-lang-select" id="chatLangSelect" aria-label="Chat Language">
+            <option value="en">EN</option>
+            <option value="es">ES</option>
+            <option value="fr">FR</option>
+            <option value="ar">AR</option>
+            <option value="pt">PT</option>
+            <option value="de">DE</option>
+            <option value="hi">HI</option>
+          </select>
+          <textarea class="chat-input" id="chatInput" placeholder="Ask me anything about the stadium..." rows="1"></textarea>
+          <button class="chat-send-btn" id="chatSendBtn" aria-label="Send Message">➤</button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ========== NOTIFICATION PANEL ========== -->
+    <aside class="notif-panel" id="notifPanel" role="complementary" aria-label="Notifications">
+      <div class="notif-header">
+        <h3 style="font-family:var(--font-display);font-weight:700;">Notifications</h3>
+        <button class="chat-close" id="notifCloseBtn" aria-label="Close Notifications">✕</button>
+      </div>
+      <div class="notif-list" id="notifList">
+        <!-- Populated by JS -->
+      </div>
+    </aside>
+
+  </div><!-- /app-layout -->
+
+  <!-- ========== SETTINGS MODAL ========== -->
+  <div class="modal-overlay" id="settingsModal">
+    <div class="modal-content">
+      <h2 class="modal-title">⚙️ Settings</h2>
+      <div class="modal-field">
+        <label class="modal-label" for="apiKeyInput">Google Gemini API Key</label>
+        <input type="password" class="modal-input" id="apiKeyInput" placeholder="Enter your Gemini API key...">
+        <div class="modal-hint">Required for AI chat and translation features. Your key is stored locally and never shared. Get one at <a href="https://aistudio.google.com/apikey" target="_blank">aistudio.google.com</a></div>
+      </div>
+      <div class="modal-field">
+        <label class="modal-label" for="stadiumSelect">Stadium</label>
+        <select class="modal-input" id="stadiumSelect" style="cursor:pointer;">
+          <option value="metlife">MetLife Stadium — New York/New Jersey</option>
+          <option value="sofi">SoFi Stadium — Los Angeles</option>
+          <option value="at_t">AT&T Stadium — Dallas</option>
+          <option value="hard_rock">Hard Rock Stadium — Miami</option>
+          <option value="lincoln">Lincoln Financial Field — Philadelphia</option>
+          <option value="arrowhead">GEHA Field at Arrowhead — Kansas City</option>
+          <option value="nrg">NRG Stadium — Houston</option>
+          <option value="lumen">Lumen Field — Seattle</option>
+          <option value="gillette">Gillette Stadium — Boston/Foxborough</option>
+          <option value="mercedes">Mercedes-Benz Stadium — Atlanta</option>
+          <option value="azteca">Estadio Azteca — Mexico City</option>
+          <option value="guadalajara">Estadio Akron — Guadalajara</option>
+          <option value="monterrey">Estadio BBVA — Monterrey</option>
+          <option value="bc_place">BC Place — Vancouver</option>
+          <option value="bmo">BMO Field — Toronto</option>
+        </select>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-secondary" id="settingsCancel">Cancel</button>
+        <button class="btn-primary" id="settingsSave">Save Settings</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Scripts -->
+  <script src="dashboard-data.js"></script>
+  <script src="crowd-data.js"></script>
+  <script src="stadium-map.js"></script>
+  <script src="ai-assistant.js"></script>
+  <script src="stadium-3d.js"></script>
+  <script src="websocket-client.js"></script>
+  <script src="animations.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
