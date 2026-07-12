@@ -6,16 +6,16 @@ exports.handler = async (event, context) => {
     avg_wait_time: 4.2,
     alerts: [
       { type: 'warning', section: 'B1', message: 'High density detected' },
-      { type: 'info', section: 'D1', message: 'Entry queue forming' }
-    ]
+      { type: 'info', section: 'D1', message: 'Entry queue forming' },
+    ],
   };
 
   return {
     statusCode: 200,
     headers: {
       'Content-Type': 'application/json',
-      'Access-Control-Allow-Origin': '*'
+      'Access-Control-Allow-Origin': '*',
     },
-    body: JSON.stringify(mockStats)
+    body: JSON.stringify(mockStats),
   };
 };

@@ -49,9 +49,9 @@
       try {
         // Fetch all data endpoints
         const [crowdData, gatesData, matchesData] = await Promise.all([
-          fetch('/api/crowd/density').then(r => r.json()),
-          fetch('/api/gates/status').then(r => r.json()),
-          fetch('/api/matches/live').then(r => r.json())
+          fetch('/api/crowd/density').then((r) => r.json()),
+          fetch('/api/gates/status').then((r) => r.json()),
+          fetch('/api/matches/live').then((r) => r.json()),
         ]);
 
         // Emit updates
@@ -76,12 +76,12 @@
 
     off(event, callback) {
       if (!this.listeners[event]) return;
-      this.listeners[event] = this.listeners[event].filter(cb => cb !== callback);
+      this.listeners[event] = this.listeners[event].filter((cb) => cb !== callback);
     }
 
     emit(event, data) {
       if (!this.listeners[event]) return;
-      this.listeners[event].forEach(callback => {
+      this.listeners[event].forEach((callback) => {
         try {
           callback(data);
         } catch (error) {
@@ -97,8 +97,10 @@
         this.emit('roleConfirmed', data);
         return true;
       }
-      
-      console.warn('Cannot send message: Polling mode does not support bidirectional communication');
+
+      console.warn(
+        'Cannot send message: Polling mode does not support bidirectional communication'
+      );
       return false;
     }
 
@@ -117,8 +119,10 @@
     handleReconnect() {
       if (this.reconnectAttempts < this.maxReconnectAttempts) {
         this.reconnectAttempts++;
-        console.log(`Attempting to reconnect (${this.reconnectAttempts}/${this.maxReconnectAttempts})...`);
-        
+        console.log(
+          `Attempting to reconnect (${this.reconnectAttempts}/${this.maxReconnectAttempts})...`
+        );
+
         setTimeout(() => {
           this.connect();
         }, this.reconnectDelay);
@@ -141,5 +145,4 @@
 
   // Export globally
   window.WSClient = wsClient;
-
 })();

@@ -6,7 +6,7 @@ exports.handler = async (event, context) => {
       severity: 'medium',
       location: 'Section B1, Row 15',
       time: new Date(Date.now() - 300000).toISOString(),
-      status: 'resolved'
+      status: 'resolved',
     },
     {
       id: 2,
@@ -14,7 +14,7 @@ exports.handler = async (event, context) => {
       severity: 'low',
       location: 'Gate 3',
       time: new Date(Date.now() - 600000).toISOString(),
-      status: 'active'
+      status: 'active',
     },
     {
       id: 3,
@@ -22,16 +22,16 @@ exports.handler = async (event, context) => {
       severity: 'high',
       location: 'Concourse Level 2',
       time: new Date(Date.now() - 120000).toISOString(),
-      status: 'monitoring'
-    }
+      status: 'monitoring',
+    },
   ];
 
   return {
     statusCode: 200,
     headers: {
       'Content-Type': 'application/json',
-      'Access-Control-Allow-Origin': '*'
+      'Access-Control-Allow-Origin': '*',
     },
-    body: JSON.stringify(mockIncidents)
+    body: JSON.stringify(mockIncidents),
   };
 };

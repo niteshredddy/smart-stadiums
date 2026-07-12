@@ -39,7 +39,7 @@ describe('API Endpoints', () => {
       expect(Array.isArray(res.body)).toBe(true);
       expect(res.body.length).toBeGreaterThan(0);
 
-      res.body.forEach(row => {
+      res.body.forEach((row) => {
         expect(row).toHaveProperty('id');
         expect(row).toHaveProperty('zone');
         expect(row).toHaveProperty('density');
@@ -68,7 +68,7 @@ describe('API Endpoints', () => {
       expect(Array.isArray(res.body)).toBe(true);
       expect(res.body.length).toBe(6);
 
-      res.body.forEach(gate => {
+      res.body.forEach((gate) => {
         expect(gate).toHaveProperty('name');
         expect(gate).toHaveProperty('status');
         expect(gate).toHaveProperty('throughput');
@@ -84,7 +84,7 @@ describe('API Endpoints', () => {
       expect(Array.isArray(res.body)).toBe(true);
       expect(res.body.length).toBe(5);
 
-      res.body.forEach(lot => {
+      res.body.forEach((lot) => {
         expect(lot).toHaveProperty('name');
         expect(lot).toHaveProperty('available');
         expect(lot).toHaveProperty('capacity');
@@ -99,7 +99,7 @@ describe('API Endpoints', () => {
       expect(Array.isArray(res.body)).toBe(true);
       expect(res.body.length).toBe(3);
 
-      res.body.forEach(match => {
+      res.body.forEach((match) => {
         expect(match).toHaveProperty('team1');
         expect(match).toHaveProperty('team2');
         expect(match).toHaveProperty('score1');
@@ -116,7 +116,7 @@ describe('API Endpoints', () => {
       expect(res.status).toBe(200);
       expect(Array.isArray(res.body)).toBe(true);
 
-      res.body.forEach(incident => {
+      res.body.forEach((incident) => {
         expect(incident).toHaveProperty('type');
         expect(incident).toHaveProperty('location');
         expect(incident).toHaveProperty('severity');
@@ -132,7 +132,7 @@ describe('API Endpoints', () => {
       expect(Array.isArray(res.body)).toBe(true);
       expect(res.body.length).toBe(4);
 
-      res.body.forEach(s => {
+      res.body.forEach((s) => {
         expect(s).toHaveProperty('name');
         expect(s).toHaveProperty('role');
         expect(s).toHaveProperty('location');
@@ -157,7 +157,7 @@ describe('API Endpoints', () => {
       expect(Array.isArray(res.body)).toBe(true);
       expect(res.body.length).toBe(4);
 
-      res.body.forEach(m => {
+      res.body.forEach((m) => {
         expect(m).toHaveProperty('metric');
         expect(m).toHaveProperty('value');
         expect(m).toHaveProperty('unit');
@@ -175,17 +175,13 @@ describe('API Endpoints', () => {
 
   describe('POST /api/ai/chat', () => {
     test('should return 400 when message is missing', async () => {
-      const res = await request(app)
-        .post('/api/ai/chat')
-        .send({});
+      const res = await request(app).post('/api/ai/chat').send({});
       expect(res.status).toBe(400);
       expect(res.body).toHaveProperty('error');
     });
 
     test('should return 400 when message is empty', async () => {
-      const res = await request(app)
-        .post('/api/ai/chat')
-        .send({ message: '   ' });
+      const res = await request(app).post('/api/ai/chat').send({ message: '   ' });
       expect(res.status).toBe(400);
       expect(res.body.error).toMatch(/empty/i);
     });

@@ -33,7 +33,7 @@
       this.canvas = canvas;
       this.ctx = canvas.getContext('2d');
       this.resize();
-      
+
       window.addEventListener('resize', () => this.resize());
       this.createParticles();
       this.animate();
@@ -53,28 +53,28 @@
           vy: (Math.random() - 0.5) * 0.5,
           size: Math.random() * 2 + 1,
           opacity: Math.random() * 0.5 + 0.2,
-          color: Math.random() > 0.5 ? '#6C2BD9' : '#0D9488'
+          color: Math.random() > 0.5 ? '#6C2BD9' : '#0D9488',
         });
       }
     }
 
     animate() {
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-      
-      this.particles.forEach(p => {
+
+      this.particles.forEach((p) => {
         p.x += p.vx;
         p.y += p.vy;
-        
+
         if (p.x < 0 || p.x > this.canvas.width) p.vx *= -1;
         if (p.y < 0 || p.y > this.canvas.height) p.vy *= -1;
-        
+
         this.ctx.beginPath();
         this.ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
         this.ctx.fillStyle = p.color;
         this.ctx.globalAlpha = p.opacity;
         this.ctx.fill();
       });
-      
+
       this.ctx.globalAlpha = 1;
       requestAnimationFrame(() => this.animate());
     }
@@ -82,17 +82,17 @@
 
   // Magnetic Button Effect
   function initMagneticButtons() {
-    document.querySelectorAll('.header-btn, .role-btn, .nav-link').forEach(btn => {
+    document.querySelectorAll('.header-btn, .role-btn, .nav-link').forEach((btn) => {
       btn.addEventListener('mousemove', (e) => {
         const rect = btn.getBoundingClientRect();
         const x = e.clientX - rect.left - rect.width / 2;
         const y = e.clientY - rect.top - rect.height / 2;
-        
+
         gsap.to(btn, {
           x: x * 0.3,
           y: y * 0.3,
           duration: 0.3,
-          ease: 'power2.out'
+          ease: 'power2.out',
         });
       });
 
@@ -101,7 +101,7 @@
           x: 0,
           y: 0,
           duration: 0.5,
-          ease: 'elastic.out(1, 0.5)'
+          ease: 'elastic.out(1, 0.5)',
         });
       });
     });
@@ -109,13 +109,13 @@
 
   // Card Hover Effects
   function initCardEffects() {
-    document.querySelectorAll('.glass-card, .stat-card').forEach(card => {
+    document.querySelectorAll('.glass-card, .stat-card').forEach((card) => {
       card.addEventListener('mouseenter', () => {
         gsap.to(card, {
           y: -5,
           boxShadow: '0 20px 40px rgba(108, 43, 217, 0.2)',
           duration: 0.4,
-          ease: 'power2.out'
+          ease: 'power2.out',
         });
       });
 
@@ -124,7 +124,7 @@
           y: 0,
           boxShadow: '0 8px 30px rgba(0, 0, 0, 0.5)',
           duration: 0.4,
-          ease: 'power2.out'
+          ease: 'power2.out',
         });
       });
     });
@@ -139,34 +139,46 @@
       x: -100,
       opacity: 0,
       duration: 0.8,
-      ease: 'power3.out'
+      ease: 'power3.out',
     });
 
     // Header animation
-    tl.from('.top-header', {
-      y: -50,
-      opacity: 0,
-      duration: 0.6,
-      ease: 'power3.out'
-    }, '-=0.4');
+    tl.from(
+      '.top-header',
+      {
+        y: -50,
+        opacity: 0,
+        duration: 0.6,
+        ease: 'power3.out',
+      },
+      '-=0.4'
+    );
 
     // Stats stagger
-    tl.from('.stat-card', {
-      y: 30,
-      opacity: 0,
-      duration: 0.5,
-      stagger: 0.1,
-      ease: 'power3.out'
-    }, '-=0.3');
+    tl.from(
+      '.stat-card',
+      {
+        y: 30,
+        opacity: 0,
+        duration: 0.5,
+        stagger: 0.1,
+        ease: 'power3.out',
+      },
+      '-=0.3'
+    );
 
     // Cards stagger
-    tl.from('.glass-card', {
-      y: 30,
-      opacity: 0,
-      duration: 0.5,
-      stagger: 0.08,
-      ease: 'power3.out'
-    }, '-=0.3');
+    tl.from(
+      '.glass-card',
+      {
+        y: 30,
+        opacity: 0,
+        duration: 0.5,
+        stagger: 0.08,
+        ease: 'power3.out',
+      },
+      '-=0.3'
+    );
   }
 
   // Section Transition Animation
@@ -174,25 +186,27 @@
     const section = document.getElementById(sectionId);
     if (!section) return;
 
-    gsap.fromTo(section, 
+    gsap.fromTo(
+      section,
       { opacity: 0, y: 20 },
-      { 
-        opacity: 1, 
-        y: 0, 
-        duration: 0.5, 
-        ease: 'power2.out' 
+      {
+        opacity: 1,
+        y: 0,
+        duration: 0.5,
+        ease: 'power2.out',
       }
     );
 
     // Animate elements within section
-    gsap.fromTo(section.querySelectorAll('.stat-card'),
+    gsap.fromTo(
+      section.querySelectorAll('.stat-card'),
       { opacity: 0, scale: 0.9 },
       {
         opacity: 1,
         scale: 1,
         duration: 0.4,
         stagger: 0.05,
-        ease: 'back.out(1.7)'
+        ease: 'back.out(1.7)',
       }
     );
   }
@@ -205,17 +219,17 @@
         opacity: 0,
         duration: 0.4,
         delay: index * 0.02,
-        ease: 'back.out(1.7)'
+        ease: 'back.out(1.7)',
       });
     });
   }
 
   // Number Counter Animation
   function animateCounters() {
-    document.querySelectorAll('.stat-value').forEach(counter => {
+    document.querySelectorAll('.stat-value').forEach((counter) => {
       const text = counter.textContent;
       const hasNumber = /\d/.test(text);
-      
+
       if (hasNumber) {
         const finalValue = text;
         gsap.from(counter, {
@@ -223,7 +237,7 @@
           duration: 1.5,
           ease: 'power2.out',
           snap: { textContent: 1 },
-          onUpdate: function() {
+          onUpdate: function () {
             if (finalValue.includes('%')) {
               counter.textContent = Math.round(this.targets()[0].textContent) + '%';
             } else if (finalValue.includes(',')) {
@@ -231,7 +245,7 @@
             } else {
               counter.textContent = Math.round(this.targets()[0].textContent);
             }
-          }
+          },
         });
       }
     });
@@ -239,14 +253,15 @@
 
   // Progress Bar Animation
   function animateProgressBars() {
-    document.querySelectorAll('.progress-fill').forEach(bar => {
+    document.querySelectorAll('.progress-fill').forEach((bar) => {
       const width = bar.style.width;
-      gsap.fromTo(bar,
+      gsap.fromTo(
+        bar,
         { width: '0%' },
         {
           width: width,
           duration: 1.2,
-          ease: 'power2.out'
+          ease: 'power2.out',
         }
       );
     });
@@ -261,13 +276,13 @@
       gsap.to(panel, {
         right: 0,
         duration: 0.5,
-        ease: 'power3.out'
+        ease: 'power3.out',
       });
     } else {
       gsap.to(panel, {
         right: -420,
         duration: 0.4,
-        ease: 'power3.in'
+        ease: 'power3.in',
       });
     }
   }
@@ -278,13 +293,14 @@
     if (!panel) return;
 
     if (open) {
-      gsap.fromTo(panel,
+      gsap.fromTo(
+        panel,
         { opacity: 0, x: 20 },
         {
           opacity: 1,
           x: 0,
           duration: 0.3,
-          ease: 'power2.out'
+          ease: 'power2.out',
         }
       );
     } else {
@@ -292,20 +308,21 @@
         opacity: 0,
         x: 20,
         duration: 0.2,
-        ease: 'power2.in'
+        ease: 'power2.in',
       });
     }
   }
 
   // Toast Notification Animation
   function animateToast(toast) {
-    gsap.fromTo(toast,
+    gsap.fromTo(
+      toast,
       { x: 100, opacity: 0 },
       {
         x: 0,
         opacity: 1,
         duration: 0.4,
-        ease: 'back.out(1.7)'
+        ease: 'back.out(1.7)',
       }
     );
 
@@ -315,7 +332,7 @@
       duration: 0.3,
       delay: 4.5,
       ease: 'power2.in',
-      onComplete: () => toast.remove()
+      onComplete: () => toast.remove(),
     });
   }
 
@@ -325,10 +342,11 @@
     if (!modal) return;
 
     const content = modal.querySelector('.modal-content');
-    
+
     if (open) {
       gsap.to(modal, { opacity: 1, duration: 0.3 });
-      gsap.fromTo(content,
+      gsap.fromTo(
+        content,
         { scale: 0.9, opacity: 0 },
         { scale: 1, opacity: 1, duration: 0.4, ease: 'back.out(1.7)' }
       );
@@ -337,12 +355,12 @@
         scale: 0.9,
         opacity: 0,
         duration: 0.2,
-        ease: 'power2.in'
+        ease: 'power2.in',
       });
       gsap.to(modal, {
         opacity: 0,
         duration: 0.2,
-        delay: 0.1
+        delay: 0.1,
       });
     }
   }
@@ -356,37 +374,34 @@
       xPercent: -50,
       duration: 40,
       repeat: -1,
-      ease: 'none'
+      ease: 'none',
     });
   }
 
   // Live Indicator Pulse
   function animateLiveIndicators() {
-    document.querySelectorAll('.live-dot, .ticker-live').forEach(dot => {
+    document.querySelectorAll('.live-dot, .ticker-live').forEach((dot) => {
       gsap.to(dot, {
         scale: 1.5,
         opacity: 0.5,
         duration: 0.8,
         repeat: -1,
         yoyo: true,
-        ease: 'power1.inOut'
+        ease: 'power1.inOut',
       });
     });
   }
 
   // Navigation Active State Animation
   function animateNavActive() {
-    document.querySelectorAll('.nav-link').forEach(link => {
-      link.addEventListener('click', function() {
-        document.querySelectorAll('.nav-link').forEach(l => {
+    document.querySelectorAll('.nav-link').forEach((link) => {
+      link.addEventListener('click', function () {
+        document.querySelectorAll('.nav-link').forEach((l) => {
           gsap.to(l, { x: 0, duration: 0.3 });
         });
-        
+
         if (this.classList.contains('active')) {
-          gsap.fromTo(this,
-            { x: -10 },
-            { x: 0, duration: 0.4, ease: 'power2.out' }
-          );
+          gsap.fromTo(this, { x: -10 }, { x: 0, duration: 0.4, ease: 'power2.out' });
         }
       });
     });
@@ -394,25 +409,22 @@
 
   // Role Switch Animation
   function animateRoleSwitch() {
-    document.querySelectorAll('.role-btn').forEach(btn => {
-      btn.addEventListener('click', function() {
-        gsap.fromTo(this,
-          { scale: 0.9 },
-          { scale: 1, duration: 0.3, ease: 'back.out(1.7)' }
-        );
+    document.querySelectorAll('.role-btn').forEach((btn) => {
+      btn.addEventListener('click', function () {
+        gsap.fromTo(this, { scale: 0.9 }, { scale: 1, duration: 0.3, ease: 'back.out(1.7)' });
       });
     });
   }
 
   // Gate Bar Animation
   function animateGateBars() {
-    document.querySelectorAll('.gate-bar').forEach(bar => {
+    document.querySelectorAll('.gate-bar').forEach((bar) => {
       const fill = bar.querySelector('.gate-fill');
       if (fill) {
         gsap.from(fill, {
           width: 0,
           duration: 0.8,
-          ease: 'power2.out'
+          ease: 'power2.out',
         });
       }
     });
@@ -463,7 +475,7 @@
   function init() {
     // Start particle system
     const particleSystem = new ParticleSystem(document.body);
-    
+
     // Initialize effects (commented out magnetic buttons to prevent interference)
     // initMagneticButtons();
     initCardEffects();
@@ -488,7 +500,7 @@
       notificationPanel: animateNotificationPanel,
       toast: animateToast,
       modal: animateModal,
-      gateBars: animateGateBars
+      gateBars: animateGateBars,
     };
 
     console.log('✨ Animations initialized');
@@ -500,5 +512,4 @@
   } else {
     init();
   }
-
 })();

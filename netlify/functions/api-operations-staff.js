@@ -8,16 +8,16 @@ exports.handler = async (event, context) => {
       { name: 'Medical', total: 89, on_duty: 82 },
       { name: 'Crowd Control', total: 312, on_duty: 289 },
       { name: 'Guest Services', total: 156, on_duty: 145 },
-      { name: 'Maintenance', total: 56, on_duty: 30 }
-    ]
+      { name: 'Maintenance', total: 56, on_duty: 30 },
+    ],
   };
 
   return {
     statusCode: 200,
     headers: {
       'Content-Type': 'application/json',
-      'Access-Control-Allow-Origin': '*'
+      'Access-Control-Allow-Origin': '*',
     },
-    body: JSON.stringify(mockStaff)
+    body: JSON.stringify(mockStaff),
   };
 };

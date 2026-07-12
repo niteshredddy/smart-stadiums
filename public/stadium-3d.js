@@ -16,7 +16,7 @@
       this.renderer = null;
       this.stadium = null;
       this.animationId = null;
-      
+
       this.init();
     }
 
@@ -69,15 +69,15 @@
       this.scene.add(directionalLight);
 
       // Accent lights
-      const purpleLight = new THREE.PointLight(0x6C2BD9, 0.8, 100);
+      const purpleLight = new THREE.PointLight(0x6c2bd9, 0.8, 100);
       purpleLight.position.set(-30, 20, -30);
       this.scene.add(purpleLight);
 
-      const tealLight = new THREE.PointLight(0x0D9488, 0.8, 100);
+      const tealLight = new THREE.PointLight(0x0d9488, 0.8, 100);
       tealLight.position.set(30, 20, 30);
       this.scene.add(tealLight);
 
-      const goldLight = new THREE.PointLight(0xF59E0B, 0.6, 100);
+      const goldLight = new THREE.PointLight(0xf59e0b, 0.6, 100);
       goldLight.position.set(0, 30, 0);
       this.scene.add(goldLight);
     }
@@ -87,10 +87,10 @@
 
       // Stadium base/field
       const fieldGeometry = new THREE.CircleGeometry(25, 64);
-      const fieldMaterial = new THREE.MeshStandardMaterial({ 
+      const fieldMaterial = new THREE.MeshStandardMaterial({
         color: 0x2d5a27,
         roughness: 0.8,
-        metalness: 0.1
+        metalness: 0.1,
       });
       const field = new THREE.Mesh(fieldGeometry, fieldMaterial);
       field.rotation.x = -Math.PI / 2;
@@ -122,16 +122,23 @@
     }
 
     addFieldLines() {
-      const lineMaterial = new THREE.LineBasicMaterial({ color: 0xffffff, opacity: 0.8, transparent: true });
-      
+      const lineMaterial = new THREE.LineBasicMaterial({
+        color: 0xffffff,
+        opacity: 0.8,
+        transparent: true,
+      });
+
       // Center circle
       const circleGeometry = new THREE.CircleGeometry(9.15, 64);
-      const circle = new THREE.Mesh(circleGeometry, new THREE.MeshBasicMaterial({ 
-        color: 0xffffff, 
-        opacity: 0.3, 
-        transparent: true,
-        side: THREE.DoubleSide
-      }));
+      const circle = new THREE.Mesh(
+        circleGeometry,
+        new THREE.MeshBasicMaterial({
+          color: 0xffffff,
+          opacity: 0.3,
+          transparent: true,
+          side: THREE.DoubleSide,
+        })
+      );
       circle.rotation.x = -Math.PI / 2;
       circle.position.y = 0.01;
       this.stadium.add(circle);
@@ -139,7 +146,7 @@
       // Center line
       const lineGeometry = new THREE.BufferGeometry().setFromPoints([
         new THREE.Vector3(0, 0.01, -25),
-        new THREE.Vector3(0, 0.01, 25)
+        new THREE.Vector3(0, 0.01, 25),
       ]);
       const centerLine = new THREE.Line(lineGeometry, lineMaterial);
       this.stadium.add(centerLine);
@@ -152,14 +159,14 @@
     createPenaltyArea(x, y, z, material) {
       const width = 40.32;
       const height = 16.5;
-      
+
       const points = [
-        new THREE.Vector3(-width/2, 0.01, z),
-        new THREE.Vector3(-width/2, 0.01, z + (z > 0 ? -height : height)),
-        new THREE.Vector3(width/2, 0.01, z + (z > 0 ? -height : height)),
-        new THREE.Vector3(width/2, 0.01, z)
+        new THREE.Vector3(-width / 2, 0.01, z),
+        new THREE.Vector3(-width / 2, 0.01, z + (z > 0 ? -height : height)),
+        new THREE.Vector3(width / 2, 0.01, z + (z > 0 ? -height : height)),
+        new THREE.Vector3(width / 2, 0.01, z),
       ];
-      
+
       const geometry = new THREE.BufferGeometry().setFromPoints(points);
       const line = new THREE.Line(geometry, material);
       this.stadium.add(line);
@@ -167,13 +174,13 @@
 
     createStandSection(x, y, z, rotationX, rotationY, rotationZ) {
       const standGroup = new THREE.Group();
-      
+
       // Tier 1
       const tier1Geometry = new THREE.BoxGeometry(50, 8, 10);
-      const tier1Material = new THREE.MeshStandardMaterial({ 
+      const tier1Material = new THREE.MeshStandardMaterial({
         color: 0x1a1a2e,
         roughness: 0.7,
-        metalness: 0.3
+        metalness: 0.3,
       });
       const tier1 = new THREE.Mesh(tier1Geometry, tier1Material);
       tier1.position.y = 4;
@@ -191,12 +198,12 @@
 
       // Tier 3 (VIP)
       const tier3Geometry = new THREE.BoxGeometry(40, 5, 6);
-      const tier3Material = new THREE.MeshStandardMaterial({ 
-        color: 0x6C2BD9,
+      const tier3Material = new THREE.MeshStandardMaterial({
+        color: 0x6c2bd9,
         roughness: 0.5,
         metalness: 0.5,
-        emissive: 0x6C2BD9,
-        emissiveIntensity: 0.1
+        emissive: 0x6c2bd9,
+        emissiveIntensity: 0.1,
       });
       const tier3 = new THREE.Mesh(tier3Geometry, tier3Material);
       tier3.position.y = 16.5;
@@ -215,21 +222,17 @@
 
     addSeats(parent, width, height, yOffset, yPosition, depth) {
       const seatGeometry = new THREE.BoxGeometry(0.8, 0.5, 0.8);
-      const seatColors = [0x6C2BD9, 0x0D9488, 0xF59E0B, 0x3b82f6];
-      
+      const seatColors = [0x6c2bd9, 0x0d9488, 0xf59e0b, 0x3b82f6];
+
       for (let row = 0; row < height; row++) {
         for (let col = 0; col < width; col++) {
           const seatMaterial = new THREE.MeshStandardMaterial({
             color: seatColors[Math.floor(Math.random() * seatColors.length)],
             roughness: 0.8,
-            metalness: 0.2
+            metalness: 0.2,
           });
           const seat = new THREE.Mesh(seatGeometry, seatMaterial);
-          seat.position.set(
-            -width/2 + col * 1 + 0.5,
-            yPosition + row * 0.8,
-            depth/2 + 0.5
-          );
+          seat.position.set(-width / 2 + col * 1 + 0.5, yPosition + row * 0.8, depth / 2 + 0.5);
           seat.castShadow = true;
           parent.add(seat);
         }
@@ -238,14 +241,14 @@
 
     createRoof() {
       const roofGroup = new THREE.Group();
-      
+
       // Main roof structure
       const roofGeometry = new THREE.CylinderGeometry(35, 30, 5, 64, 1, true);
       const roofMaterial = new THREE.MeshStandardMaterial({
         color: 0x1a1a2e,
         roughness: 0.6,
         metalness: 0.4,
-        side: THREE.DoubleSide
+        side: THREE.DoubleSide,
       });
       const roof = new THREE.Mesh(roofGeometry, roofMaterial);
       roof.position.y = 22;
@@ -257,11 +260,7 @@
         const angle = (i / 8) * Math.PI * 2;
         const supportGeometry = new THREE.CylinderGeometry(0.5, 0.5, 20, 16);
         const support = new THREE.Mesh(supportGeometry, roofMaterial);
-        support.position.set(
-          Math.cos(angle) * 30,
-          12,
-          Math.sin(angle) * 30
-        );
+        support.position.set(Math.cos(angle) * 30, 12, Math.sin(angle) * 30);
         support.castShadow = true;
         roofGroup.add(support);
       }
@@ -269,9 +268,9 @@
       // LED strip lights on roof edge
       const ledGeometry = new THREE.TorusGeometry(35, 0.3, 16, 100);
       const ledMaterial = new THREE.MeshBasicMaterial({
-        color: 0x6C2BD9,
+        color: 0x6c2bd9,
         transparent: true,
-        opacity: 0.8
+        opacity: 0.8,
       });
       const ledStrip = new THREE.Mesh(ledGeometry, ledMaterial);
       ledStrip.rotation.x = Math.PI / 2;
@@ -283,13 +282,13 @@
 
     createCornerTower(x, y, z) {
       const towerGroup = new THREE.Group();
-      
+
       // Tower base
       const baseGeometry = new THREE.CylinderGeometry(3, 4, 25, 8);
       const towerMaterial = new THREE.MeshStandardMaterial({
         color: 0x2d2d4a,
         roughness: 0.6,
-        metalness: 0.4
+        metalness: 0.4,
       });
       const base = new THREE.Mesh(baseGeometry, towerMaterial);
       base.position.y = 12.5;
@@ -299,16 +298,16 @@
       // Tower top (light)
       const topGeometry = new THREE.SphereGeometry(2, 16, 16);
       const topMaterial = new THREE.MeshBasicMaterial({
-        color: 0xF59E0B,
+        color: 0xf59e0b,
         transparent: true,
-        opacity: 0.9
+        opacity: 0.9,
       });
       const top = new THREE.Mesh(topGeometry, topMaterial);
       top.position.y = 27;
       towerGroup.add(top);
 
       // Point light
-      const towerLight = new THREE.PointLight(0xF59E0B, 1, 50);
+      const towerLight = new THREE.PointLight(0xf59e0b, 1, 50);
       towerLight.position.y = 27;
       towerGroup.add(towerLight);
 
@@ -323,10 +322,10 @@
       const colors = new Float32Array(particleCount * 3);
 
       const colorOptions = [
-        new THREE.Color(0x6C2BD9),
-        new THREE.Color(0x0D9488),
-        new THREE.Color(0xF59E0B),
-        new THREE.Color(0x3b82f6)
+        new THREE.Color(0x6c2bd9),
+        new THREE.Color(0x0d9488),
+        new THREE.Color(0xf59e0b),
+        new THREE.Color(0x3b82f6),
       ];
 
       for (let i = 0; i < particleCount; i++) {
@@ -348,7 +347,7 @@
         vertexColors: true,
         transparent: true,
         opacity: 0.6,
-        blending: THREE.AdditiveBlending
+        blending: THREE.AdditiveBlending,
       });
 
       this.particles = new THREE.Points(particleGeometry, particleMaterial);
@@ -396,10 +395,10 @@
     onResize() {
       const width = this.container.clientWidth;
       const height = this.container.clientHeight;
-      
+
       this.camera.aspect = width / height;
       this.camera.updateProjectionMatrix();
-      
+
       this.renderer.setSize(width, height);
     }
 
@@ -437,5 +436,4 @@
 
   // Export for use in app
   window.Stadium3D = Stadium3D;
-
 })();

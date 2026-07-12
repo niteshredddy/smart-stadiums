@@ -26,14 +26,14 @@
     currentSection = section;
 
     // Update nav links
-    document.querySelectorAll('.nav-link').forEach(link => {
+    document.querySelectorAll('.nav-link').forEach((link) => {
       const isActive = link.dataset.section === section;
       link.classList.toggle('active', isActive);
       link.setAttribute('aria-current', isActive ? 'page' : 'false');
     });
 
     // Update section panels
-    document.querySelectorAll('.section-panel').forEach(panel => {
+    document.querySelectorAll('.section-panel').forEach((panel) => {
       panel.classList.remove('active');
     });
 
@@ -50,7 +50,7 @@
       transport: 'Transportation Hub',
       translator: 'Multilingual Translator',
       sustainability: 'Sustainability',
-      operations: 'Operations Center'
+      operations: 'Operations Center',
     };
     if (pageTitle) pageTitle.textContent = titles[section] || 'Dashboard';
 
@@ -77,14 +77,14 @@
     currentRole = role;
 
     // Update role buttons
-    document.querySelectorAll('.role-btn').forEach(btn => {
+    document.querySelectorAll('.role-btn').forEach((btn) => {
       const isActive = btn.dataset.role === role;
       btn.classList.toggle('active', isActive);
       btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
     });
 
     // Show/hide role-specific elements
-    document.querySelectorAll('[data-role-visible]').forEach(el => {
+    document.querySelectorAll('[data-role-visible]').forEach((el) => {
       const roles = el.dataset.roleVisible.split(' ');
       el.style.display = roles.includes(role) || roles.includes('all') ? '' : 'none';
     });
@@ -151,7 +151,7 @@
       const chatInput = document.getElementById('chatInput');
       if (chatInput) setTimeout(() => chatInput.focus(), 300);
     }
-    
+
     // Trigger animation
     if (window.Animations) {
       window.Animations.chatPanel(isOpen);
@@ -203,9 +203,7 @@
     const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
     // Format text: convert markdown bold and newlines
-    const formatted = text
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .replace(/\n/g, '<br>');
+    const formatted = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
 
     const msgHTML = `
       <div class="chat-message ${type}" role="log">
@@ -248,7 +246,7 @@
 
     const notifBtn = document.getElementById('notifBtn');
     if (notifBtn) notifBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
-    
+
     // Trigger animation
     if (window.Animations) {
       window.Animations.notificationPanel(isOpen);
@@ -263,7 +261,7 @@
     // Focus the first interactive element in the modal
     const firstInput = settingsModal.querySelector('select, input, button');
     if (firstInput) setTimeout(() => firstInput.focus(), 300);
-    
+
     // Trigger animation
     if (window.Animations) {
       window.Animations.modal(true);
@@ -277,7 +275,7 @@
     // Return focus to settings button
     const settingsBtn = document.getElementById('settingsBtn');
     if (settingsBtn) settingsBtn.focus();
-    
+
     // Trigger animation
     if (window.Animations) {
       window.Animations.modal(false);
@@ -405,7 +403,7 @@
   // ---- Event Listeners ----
   function bindEvents() {
     // Navigation — keyboard accessible
-    document.querySelectorAll('.nav-link').forEach(link => {
+    document.querySelectorAll('.nav-link').forEach((link) => {
       link.setAttribute('tabindex', '0');
       link.setAttribute('role', 'button');
 
@@ -423,7 +421,7 @@
     });
 
     // Role switching
-    document.querySelectorAll('.role-btn').forEach(btn => {
+    document.querySelectorAll('.role-btn').forEach((btn) => {
       btn.addEventListener('click', () => {
         switchRole(btn.dataset.role);
       });
@@ -451,7 +449,7 @@
     }
 
     // Quick actions in chat
-    document.querySelectorAll('.quick-action').forEach(btn => {
+    document.querySelectorAll('.quick-action').forEach((btn) => {
       btn.addEventListener('click', () => {
         const input = document.getElementById('chatInput');
         if (input) {
@@ -574,7 +572,7 @@
         '<span class="insight-label">Operations AI</span><strong>Priority redeployment needed.</strong> Medical incident in Section F requires 2 additional first responders. Nearest available: Team 7 (currently idle at Gate B, ETA 2 min) and Team 12 (post shift at Lot C, ETA 4 min). Auto-dispatching Team 7 with highest urgency.',
         '<span class="insight-label">Operations AI</span><strong>Maintenance escalation.</strong> Gate C-2 turnstile failure affecting throughput by ~200 fans/hour. Temporary manual processing activated. Repair ETA: 15 minutes. Adjacent gate C-3 handling overflow effectively.',
         '<span class="insight-label">Operations AI</span><strong>Staff rotation recommendation.</strong> Security Team 5 has been on continuous duty for 3.5 hours. Performance metrics suggest rotation. Standby Team 9 is ready for handover at Gate A in 10 minutes.',
-      ]
+      ],
     };
 
     Object.entries(insights).forEach(([section, texts]) => {

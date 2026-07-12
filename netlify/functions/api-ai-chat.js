@@ -10,7 +10,10 @@ exports.handler = async (event, context) => {
     const { message, language, conversationHistory } = body;
 
     if (!message || typeof message !== 'string') {
-      return { statusCode: 400, body: JSON.stringify({ error: 'Message is required and must be a string.' }) };
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ error: 'Message is required and must be a string.' }),
+      };
     }
 
     if (message.trim().length === 0) {
@@ -18,19 +21,27 @@ exports.handler = async (event, context) => {
     }
 
     if (message.length > 2000) {
-      return { statusCode: 400, body: JSON.stringify({ error: 'Message must be 2000 characters or less.' }) };
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ error: 'Message must be 2000 characters or less.' }),
+      };
     }
 
     const lang = language || 'en';
     if (!ALLOWED_LANGUAGES.includes(lang)) {
-      return { statusCode: 400, body: JSON.stringify({ error: `Invalid language. Allowed: ${ALLOWED_LANGUAGES.join(', ')}` }) };
+      return {
+        statusCode: 400,
+        body: JSON.stringify({
+          error: `Invalid language. Allowed: ${ALLOWED_LANGUAGES.join(', ')}`,
+        }),
+      };
     }
 
     const apiKey = process.env.GEMINI_API_KEY;
-    
+
     const headers = {
       'Content-Type': 'application/json',
-      'Access-Control-Allow-Origin': '*' // Ideally should be locked down in production
+      'Access-Control-Allow-Origin': '*', // Ideally should be locked down in production
     };
 
     if (!apiKey || apiKey.trim().length < 10) {
@@ -38,7 +49,10 @@ exports.handler = async (event, context) => {
       return {
         statusCode: 200,
         headers,
-        body: JSON.stringify({ fallback: true, message: 'AI features are in demo mode. Set GEMINI_API_KEY in Netlify to enable.' })
+        body: JSON.stringify({
+          fallback: true,
+          message: 'AI features are in demo mode. Set GEMINI_API_KEY in Netlify to enable.',
+        }),
       };
     }
 
@@ -46,7 +60,7 @@ exports.handler = async (event, context) => {
     const contents = Array.isArray(conversationHistory) ? conversationHistory.slice(-16) : [];
     contents.push({
       role: 'user',
-      parts: [{ text: message }]
+      parts: [{ text: message }],
     });
 
     const SYSTEM_PROMPT = `You are StadiumAI, an intelligent, friendly, and multilingual AI assistant for the FIFA World Cup 2026. You are deployed inside stadiums across the USA, Mexico, and Canada to help fans, staff, volunteers, and organizers.
@@ -87,8 +101,8 @@ Guidelines:
             { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_NONE' },
             { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_NONE' },
             { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' },
-          ]
-        })
+          ],
+        }),
       }
     );
 
@@ -97,12 +111,14 @@ Guidelines:
       return {
         statusCode: 200,
         headers,
-        body: JSON.stringify({ fallback: true, message: 'AI service temporarily unavailable.' })
+        body: JSON.stringify({ fallback: true, message: 'AI service temporarily unavailable.' }),
       };
     }
 
     const data = await response.json();
-    const aiText = data.candidates?.[0]?.content?.parts?.[0]?.text || 'I apologize, I could not process that request.';
+    const aiText =
+      data.candidates?.[0]?.content?.parts?.[0]?.text ||
+      'I apologize, I could not process that request.';
 
     return {
       statusCode: 200,
@@ -110,18 +126,17 @@ Guidelines:
       body: JSON.stringify({
         reply: aiText,
         role: 'model',
-      })
+      }),
     };
-
   } catch (error) {
     console.error('AI proxy error:', error.message);
     return {
       statusCode: 200,
       headers: {
         'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*'
+        'Access-Control-Allow-Origin': '*',
       },
-      body: JSON.stringify({ fallback: true, message: 'AI service error. Please try again.' })
+      body: JSON.stringify({ fallback: true, message: 'AI service error. Please try again.' }),
     };
   }
 };

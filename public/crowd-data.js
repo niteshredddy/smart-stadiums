@@ -37,7 +37,7 @@ const CrowdData = (() => {
           density: Math.min(98, Math.max(5, baseDensity)),
           capacity: 800 + Math.floor(Math.random() * 600),
           trend: Math.random() > 0.5 ? 'up' : 'down',
-          name: `${levelNames[r]} Stand — Section ${sectionNames[r]}${c + 1}`
+          name: `${levelNames[r]} Stand — Section ${sectionNames[r]}${c + 1}`,
         });
       }
     }
@@ -67,13 +67,11 @@ const CrowdData = (() => {
 
   // Render heatmap to a container
   function renderHeatmap(containerId) {
-    const container = document.getElementById(containerId);
-    if (!container) return;
-
-    container.innerHTML = zones.map(z => {
-      const level = getDensityLevel(z.density);
-      const occupied = Math.round(z.capacity * z.density / 100);
-      return `
+    const html = zones
+      .map((z) => {
+        const level = getDensityLevel(z.density);
+        const occupied = Math.round((z.capacity * z.density) / 100);
+        return `
         <div class="heatmap-cell density-${level}" 
              data-zone-id="${z.id}" 
              data-section="${z.section}"
@@ -85,14 +83,16 @@ const CrowdData = (() => {
           </div>
         </div>
       `;
-    }).join('');
+      })
+      .join('');
+    Utils.updateHTML(containerId, html);
   }
 
   // Simulate density changes
   function updateDensities() {
-    zones.forEach(z => {
+    zones.forEach((z) => {
       // Random walk with mean reversion
-      const change = (Math.random() * 8) - 4;
+      const change = Math.random() * 8 - 4;
       const meanTarget = 65; // target average
       const reversion = (meanTarget - z.density) * 0.05;
       z.density = Math.min(98, Math.max(5, Math.round(z.density + change + reversion)));
@@ -105,8 +105,11 @@ const CrowdData = (() => {
 
   // Get aggregate stats
   function getStats() {
-    let safe = 0, warning = 0, critical = 0, total = 0;
-    zones.forEach(z => {
+    let safe = 0,
+      warning = 0,
+      critical = 0,
+      total = 0;
+    zones.forEach((z) => {
       total += z.density;
       const status = getAlertStatus(z.density);
       if (status === 'critical') critical++;
@@ -120,7 +123,7 @@ const CrowdData = (() => {
       critical,
       avgDensity: Math.round(total / zones.length),
       totalZones: zones.length,
-      hasAlerts: critical > 0
+      hasAlerts: critical > 0,
     };
   }
 
@@ -128,17 +131,12 @@ const CrowdData = (() => {
   function updateStatsDisplay() {
     const stats = getStats();
 
-    const elSafe = document.getElementById('safeZones');
-    const elWarn = document.getElementById('warningZones');
-    const elCrit = document.getElementById('criticalZones');
-    const elAvg = document.getElementById('avgDensity');
+    Utils.updateText('safeZones', stats.safe);
+    Utils.updateText('warningZones', stats.warning);
+    Utils.updateText('criticalZones', stats.critical);
+    Utils.updateText('avgDensity', stats.avgDensity + '%');
+
     const badge = document.getElementById('crowdAlertBadge');
-
-    if (elSafe) elSafe.textContent = stats.safe;
-    if (elWarn) elWarn.textContent = stats.warning;
-    if (elCrit) elCrit.textContent = stats.critical;
-    if (elAvg) elAvg.textContent = stats.avgDensity + '%';
-
     if (badge) {
       if (stats.critical > 0) {
         badge.style.display = 'inline';
@@ -151,12 +149,12 @@ const CrowdData = (() => {
 
   // Get zone by ID
   function getZone(zoneId) {
-    return zones.find(z => z.id === zoneId);
+    return zones.find((z) => z.id === zoneId);
   }
 
   // Get zone by section
   function getZoneBySection(section) {
-    return zones.find(z => z.section === section);
+    return zones.find((z) => z.section === section);
   }
 
   // Get all zones
@@ -166,7 +164,7 @@ const CrowdData = (() => {
 
   // Get hotspot zones (critical density)
   function getHotspots() {
-    return zones.filter(z => z.density >= 85).sort((a, b) => b.density - a.density);
+    return zones.filter((z) => z.density >= 85).sort((a, b) => b.density - a.density);
   }
 
   // Generate crowd context for AI
@@ -177,7 +175,10 @@ const CrowdData = (() => {
     context += `${stats.safe} safe zones, ${stats.warning} warning zones, ${stats.critical} critical zones. `;
 
     if (hotspots.length > 0) {
-      context += `Hotspots: ${hotspots.slice(0, 3).map(z => `${z.section} (${z.density}%)`).join(', ')}. `;
+      context += `Hotspots: ${hotspots
+        .slice(0, 3)
+        .map((z) => `${z.section} (${z.density}%)`)
+        .join(', ')}. `;
     }
 
     return context;

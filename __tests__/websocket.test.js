@@ -28,9 +28,15 @@ beforeAll(async () => {
   // Set up the same event handlers as the production server
   io.on('connection', (socket) => {
     // Send initial data on connect
-    db.getCrowdDensity().then(data => socket.emit('crowd:update', data)).catch(() => {});
-    db.getGateStatus().then(gates => socket.emit('gates:update', gates)).catch(() => {});
-    db.getLiveMatches().then(matches => socket.emit('matches:update', matches)).catch(() => {});
+    db.getCrowdDensity()
+      .then((data) => socket.emit('crowd:update', data))
+      .catch(() => {});
+    db.getGateStatus()
+      .then((gates) => socket.emit('gates:update', gates))
+      .catch(() => {});
+    db.getLiveMatches()
+      .then((matches) => socket.emit('matches:update', matches))
+      .catch(() => {});
 
     socket.on('role:switch', (role) => {
       socket.emit('role:confirmed', role);
@@ -83,7 +89,7 @@ describe('WebSocket Events', () => {
     });
     expect(Array.isArray(data)).toBe(true);
     expect(data.length).toBeGreaterThan(0);
-    data.forEach(row => {
+    data.forEach((row) => {
       expect(row).toHaveProperty('zone');
       expect(row).toHaveProperty('density');
     });
@@ -96,7 +102,7 @@ describe('WebSocket Events', () => {
     });
     expect(Array.isArray(data)).toBe(true);
     expect(data.length).toBeGreaterThan(0);
-    data.forEach(gate => {
+    data.forEach((gate) => {
       expect(gate).toHaveProperty('name');
       expect(gate).toHaveProperty('status');
     });
@@ -109,7 +115,7 @@ describe('WebSocket Events', () => {
     });
     expect(Array.isArray(data)).toBe(true);
     expect(data.length).toBeGreaterThan(0);
-    data.forEach(match => {
+    data.forEach((match) => {
       expect(match).toHaveProperty('team1');
       expect(match).toHaveProperty('team2');
     });

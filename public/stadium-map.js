@@ -18,9 +18,12 @@ const StadiumMap = (() => {
     const cy = h / 2;
 
     // Oval stadium shape parameters
-    const outerRx = 250, outerRy = 185;
-    const innerRx = 140, innerRy = 95;
-    const fieldRx = 115, fieldRy = 72;
+    const outerRx = 250,
+      outerRy = 185;
+    const innerRx = 140,
+      innerRy = 95;
+    const fieldRx = 115,
+      fieldRy = 72;
 
     // Build zones as arc segments
     const numSegments = 16;
@@ -43,7 +46,7 @@ const StadiumMap = (() => {
       const ix2 = cx + innerRx * Math.cos(angle2);
       const iy2 = cy + innerRy * Math.sin(angle2);
 
-      const largeArc = (angle2 - angle1) > Math.PI ? 1 : 0;
+      const largeArc = angle2 - angle1 > Math.PI ? 1 : 0;
 
       // Map to a zone
       const zoneIdx = i % zones.length;
@@ -56,8 +59,8 @@ const StadiumMap = (() => {
       const midAngle = (angle1 + angle2) / 2;
       const labelR = (outerRx + innerRx) / 2;
       const labelRy = (outerRy + innerRy) / 2;
-      const lx = cx + (labelR * 0.95) * Math.cos(midAngle);
-      const ly = cy + (labelRy * 0.95) * Math.sin(midAngle);
+      const lx = cx + labelR * 0.95 * Math.cos(midAngle);
+      const ly = cy + labelRy * 0.95 * Math.sin(midAngle);
 
       const path = `M ${ox1} ${oy1} A ${outerRx} ${outerRy} 0 ${largeArc} 1 ${ox2} ${oy2} L ${ix2} ${iy2} A ${innerRx} ${innerRy} 0 ${largeArc} 0 ${ix1} ${iy1} Z`;
 
@@ -77,36 +80,40 @@ const StadiumMap = (() => {
       { angle: Math.PI, label: 'Gate D' },
     ];
 
-    let gatesHTML = gatePositions.map(g => {
-      const gx = cx + (outerRx + 22) * Math.cos(g.angle);
-      const gy = cy + (outerRy + 22) * Math.sin(g.angle);
-      return `
+    let gatesHTML = gatePositions
+      .map((g) => {
+        const gx = cx + (outerRx + 22) * Math.cos(g.angle);
+        const gy = cy + (outerRy + 22) * Math.sin(g.angle);
+        return `
         <text x="${gx}" y="${gy}" text-anchor="middle" dominant-baseline="middle"
               fill="var(--accent-400)" font-size="11" font-weight="700" font-family="Outfit, sans-serif">
           ${g.label}
         </text>
       `;
-    }).join('');
+      })
+      .join('');
 
     // POI markers on the map
     const pois = [
       { angle: -0.3, r: 0.75, icon: '🍔', label: 'Food' },
       { angle: 1.2, r: 0.78, icon: '🚻', label: 'WC' },
       { angle: 2.5, r: 0.72, icon: '🏥', label: 'First Aid' },
-      { angle: -1.8, r: 0.80, icon: '♿', label: 'Access' },
+      { angle: -1.8, r: 0.8, icon: '♿', label: 'Access' },
       { angle: 0.7, r: 0.76, icon: '🛍️', label: 'Shop' },
     ];
 
-    let poisHTML = pois.map(p => {
-      const px = cx + (outerRx * p.r) * Math.cos(p.angle);
-      const py = cy + (outerRy * p.r) * Math.sin(p.angle);
-      return `
+    let poisHTML = pois
+      .map((p) => {
+        const px = cx + outerRx * p.r * Math.cos(p.angle);
+        const py = cy + outerRy * p.r * Math.sin(p.angle);
+        return `
         <g class="poi-marker" style="cursor:pointer;">
           <circle cx="${px}" cy="${py}" r="12" fill="rgba(0,0,0,0.6)" stroke="var(--glass-border)" stroke-width="1"/>
           <text x="${px}" y="${py + 1}" text-anchor="middle" dominant-baseline="middle" font-size="12">${p.icon}</text>
         </g>
       `;
-    }).join('');
+      })
+      .join('');
 
     const svg = `
       <svg class="stadium-svg" viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg">
@@ -157,10 +164,12 @@ const StadiumMap = (() => {
     container.innerHTML = svg;
 
     // Add zone click handlers
-    container.querySelectorAll('.zone').forEach(zoneEl => {
+    container.querySelectorAll('.zone').forEach((zoneEl) => {
       zoneEl.addEventListener('click', () => {
         // Remove previous selection
-        container.querySelectorAll('.zone.selected').forEach(el => el.classList.remove('selected'));
+        container
+          .querySelectorAll('.zone.selected')
+          .forEach((el) => el.classList.remove('selected'));
         zoneEl.classList.add('selected');
 
         const idx = parseInt(zoneEl.dataset.zoneIdx);
@@ -183,18 +192,15 @@ const StadiumMap = (() => {
 
   // Show zone detail panel
   function showZoneInfo(zone) {
-    const panel = document.getElementById('zoneInfoPanel');
-    if (!panel) return;
-
-    const occupied = Math.round(zone.capacity * zone.density / 100);
+    const occupied = Math.round((zone.capacity * zone.density) / 100);
     const status = CrowdData.getAlertStatus(zone.density);
     const statusColors = {
       safe: 'var(--success)',
       warning: 'var(--warning)',
-      critical: 'var(--danger)'
+      critical: 'var(--danger)',
     };
 
-    panel.innerHTML = `
+    const html = `
       <div class="zone-info-title" style="color:${statusColors[status]}">
         📍 ${zone.name}
       </div>
@@ -220,15 +226,17 @@ const StadiumMap = (() => {
       </div>
       <div class="ai-insight mt-4" style="font-size:0.78rem;">
         <span class="insight-label">AI Note</span>
-        ${status === 'critical' 
-          ? `<strong>Action required.</strong> This zone exceeds safe density thresholds. Consider redirecting incoming fans to adjacent sections or opening additional access points.`
-          : status === 'warning'
-          ? `<strong>Monitor closely.</strong> Density is approaching threshold levels. Pre-position crowd management staff for potential intervention.`
-          : `<strong>Normal operations.</strong> Crowd flow is healthy in this zone. No intervention needed.`
+        ${
+          status === 'critical'
+            ? `<strong>Action required.</strong> This zone exceeds safe density thresholds. Consider redirecting incoming fans to adjacent sections or opening additional access points.`
+            : status === 'warning'
+              ? `<strong>Monitor closely.</strong> Density is approaching threshold levels. Pre-position crowd management staff for potential intervention.`
+              : `<strong>Normal operations.</strong> Crowd flow is healthy in this zone. No intervention needed.`
         }
       </div>
     `;
 
+    Utils.updateHTML('zoneInfoPanel', html);
     selectedZone = zone;
   }
 
@@ -238,7 +246,7 @@ const StadiumMap = (() => {
     if (!container) return;
 
     const zones = CrowdData.getAllZones();
-    container.querySelectorAll('.zone').forEach(zoneEl => {
+    container.querySelectorAll('.zone').forEach((zoneEl) => {
       const idx = parseInt(zoneEl.dataset.zoneIdx);
       if (zones[idx]) {
         zoneEl.setAttribute('fill', getDensityColor(zones[idx].density));

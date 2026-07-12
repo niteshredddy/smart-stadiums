@@ -10,21 +10,21 @@ exports.handler = async (event, context) => {
       { id: 'C1', density: 0.78, capacity: 4800, current: 3744 },
       { id: 'C2', density: 0.88, capacity: 5200, current: 4576 },
       { id: 'D1', density: 0.45, capacity: 4000, current: 1800 },
-      { id: 'D2', density: 0.92, capacity: 5800, current: 5336 }
+      { id: 'D2', density: 0.92, capacity: 5800, current: 5336 },
     ],
     total: {
       capacity: 40800,
       current: 31926,
-      percentage: 78
-    }
+      percentage: 78,
+    },
   };
 
   return {
     statusCode: 200,
     headers: {
       'Content-Type': 'application/json',
-      'Access-Control-Allow-Origin': '*'
+      'Access-Control-Allow-Origin': '*',
     },
-    body: JSON.stringify(mockData)
+    body: JSON.stringify(mockData),
   };
 };

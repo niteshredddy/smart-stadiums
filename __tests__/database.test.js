@@ -39,7 +39,7 @@ describe('StadiumDatabase', () => {
 
     test('each record should have required fields', async () => {
       const data = await db.getCrowdDensity();
-      data.forEach(row => {
+      data.forEach((row) => {
         expect(row).toHaveProperty('id');
         expect(row).toHaveProperty('zone');
         expect(row).toHaveProperty('density');
@@ -78,7 +78,7 @@ describe('StadiumDatabase', () => {
 
     test('each gate should have required fields', async () => {
       const gates = await db.getGateStatus();
-      gates.forEach(gate => {
+      gates.forEach((gate) => {
         expect(gate).toHaveProperty('id');
         expect(gate).toHaveProperty('name');
         expect(gate).toHaveProperty('status');
@@ -90,10 +90,12 @@ describe('StadiumDatabase', () => {
 
     test('active gates should have throughput within capacity', async () => {
       const gates = await db.getGateStatus();
-      gates.filter(g => g.status === 'active').forEach(gate => {
-        expect(gate.throughput).toBeGreaterThanOrEqual(0);
-        expect(gate.throughput).toBeLessThanOrEqual(gate.capacity);
-      });
+      gates
+        .filter((g) => g.status === 'active')
+        .forEach((gate) => {
+          expect(gate.throughput).toBeGreaterThanOrEqual(0);
+          expect(gate.throughput).toBeLessThanOrEqual(gate.capacity);
+        });
     });
   });
 
@@ -106,7 +108,7 @@ describe('StadiumDatabase', () => {
 
     test('each lot should have required fields', async () => {
       const lots = await db.getParkingStatus();
-      lots.forEach(lot => {
+      lots.forEach((lot) => {
         expect(lot).toHaveProperty('id');
         expect(lot).toHaveProperty('name');
         expect(lot).toHaveProperty('available');
@@ -126,7 +128,7 @@ describe('StadiumDatabase', () => {
 
     test('each match should have required fields', async () => {
       const matches = await db.getLiveMatches();
-      matches.forEach(match => {
+      matches.forEach((match) => {
         expect(match).toHaveProperty('id');
         expect(match).toHaveProperty('team1');
         expect(match).toHaveProperty('team2');
@@ -139,9 +141,11 @@ describe('StadiumDatabase', () => {
 
     test('live matches should have valid time format', async () => {
       const matches = await db.getLiveMatches();
-      matches.filter(m => m.status === 'live').forEach(match => {
-        expect(match.time).toMatch(/^\d+'/);
-      });
+      matches
+        .filter((m) => m.status === 'live')
+        .forEach((match) => {
+          expect(match.time).toMatch(/^\d+'/);
+        });
     });
   });
 
@@ -149,7 +153,7 @@ describe('StadiumDatabase', () => {
     test('should return only active incidents', async () => {
       const incidents = await db.getIncidents();
       expect(Array.isArray(incidents)).toBe(true);
-      incidents.forEach(incident => {
+      incidents.forEach((incident) => {
         expect(incident.status).toBe('active');
         expect(incident).toHaveProperty('type');
         expect(incident).toHaveProperty('location');
@@ -164,7 +168,7 @@ describe('StadiumDatabase', () => {
       const staff = await db.getStaffStatus();
       expect(Array.isArray(staff)).toBe(true);
       expect(staff.length).toBe(4);
-      staff.forEach(s => {
+      staff.forEach((s) => {
         expect(s.status).toBe('on-duty');
         expect(s).toHaveProperty('name');
         expect(s).toHaveProperty('role');
@@ -182,7 +186,7 @@ describe('StadiumDatabase', () => {
 
     test('each metric should have required fields', async () => {
       const metrics = await db.getSustainabilityMetrics();
-      metrics.forEach(m => {
+      metrics.forEach((m) => {
         expect(m).toHaveProperty('id');
         expect(m).toHaveProperty('metric');
         expect(m).toHaveProperty('value');
@@ -193,7 +197,7 @@ describe('StadiumDatabase', () => {
 
     test('should contain expected metric types', async () => {
       const metrics = await db.getSustainabilityMetrics();
-      const metricNames = metrics.map(m => m.metric);
+      const metricNames = metrics.map((m) => m.metric);
       expect(metricNames).toContain('recycling_rate');
       expect(metricNames).toContain('water_saved');
       expect(metricNames).toContain('solar_power');
