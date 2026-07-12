@@ -6,8 +6,53 @@
   NODE_VERSION = "18"
 
 [[redirects]]
-  from = "/api/*"
-  to = "/.netlify/functions/:splat"
+  from = "/api/health"
+  to = "/.netlify/functions/api-health"
+  status = 200
+
+[[redirects]]
+  from = "/api/crowd/density"
+  to = "/.netlify/functions/api-crowd-density"
+  status = 200
+
+[[redirects]]
+  from = "/api/crowd/stats"
+  to = "/.netlify/functions/api-crowd-stats"
+  status = 200
+
+[[redirects]]
+  from = "/api/gates/status"
+  to = "/.netlify/functions/api-gates-status"
+  status = 200
+
+[[redirects]]
+  from = "/api/parking/status"
+  to = "/.netlify/functions/api-parking-status"
+  status = 200
+
+[[redirects]]
+  from = "/api/matches/live"
+  to = "/.netlify/functions/api-matches-live"
+  status = 200
+
+[[redirects]]
+  from = "/api/operations/incidents"
+  to = "/.netlify/functions/api-operations-incidents"
+  status = 200
+
+[[redirects]]
+  from = "/api/operations/staff"
+  to = "/.netlify/functions/api-operations-staff"
+  status = 200
+
+[[redirects]]
+  from = "/api/sustainability/metrics"
+  to = "/.netlify/functions/api-sustainability-metrics"
+  status = 200
+
+[[redirects]]
+  from = "/api/ai/chat"
+  to = "/.netlify/functions/api-ai-chat"
   status = 200
 
 [[redirects]]

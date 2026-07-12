@@ -22,7 +22,7 @@
     <!-- ========== SIDEBAR ========== -->
     <aside class="sidebar" id="sidebar" role="navigation" aria-label="Main Navigation">
       <div class="sidebar-brand">
-        <div class="brand-icon">🏟️</div>
+        <div class="brand-icon" role="img" aria-label="Stadium">🏟️</div>
         <div class="brand-text">
           <h1>StadiumAI</h1>
           <span>FIFA World Cup 2026</span>
@@ -31,11 +31,11 @@
 
       <!-- Role Selector -->
       <div class="role-selector">
-        <label>View As</label>
-        <div class="role-buttons">
-          <button class="role-btn active" data-role="fan" id="roleFan">👤 Fan</button>
-          <button class="role-btn" data-role="staff" id="roleStaff">🛡️ Staff</button>
-          <button class="role-btn" data-role="organizer" id="roleOrganizer">📊 Org</button>
+        <label id="roleLabel">View As</label>
+        <div class="role-buttons" role="group" aria-labelledby="roleLabel">
+          <button class="role-btn active" data-role="fan" id="roleFan" aria-pressed="true">👤 Fan</button>
+          <button class="role-btn" data-role="staff" id="roleStaff" aria-pressed="false">🛡️ Staff</button>
+          <button class="role-btn" data-role="organizer" id="roleOrganizer" aria-pressed="false">📊 Org</button>
         </div>
       </div>
 
@@ -124,12 +124,12 @@
             <span class="live-dot"></span>
             <span>LIVE</span>
           </div>
-          <button class="header-btn" id="notifBtn" aria-label="Notifications">
-            🔔
+          <button class="header-btn" id="notifBtn" aria-label="Notifications" aria-expanded="false" aria-controls="notifPanel">
+            <span role="img" aria-hidden="true">🔔</span>
             <span class="notif-dot"></span>
           </button>
-          <button class="header-btn" id="chatToggleBtn" aria-label="Open AI Assistant">
-            🤖
+          <button class="header-btn" id="chatToggleBtn" aria-label="Open AI Assistant" aria-expanded="false" aria-controls="chatPanel">
+            <span role="img" aria-hidden="true">🤖</span>
           </button>
         </div>
       </header>
@@ -141,8 +141,8 @@
         <section class="section-panel active" id="sectionOverview" aria-label="Overview Dashboard">
           <!-- Stats Row -->
           <div class="stats-grid" id="overviewStats">
-            <div class="stat-card purple">
-              <div class="stat-icon purple">👥</div>
+            <div class="stat-card purple" role="group" aria-label="Total Attendance statistic">
+              <div class="stat-icon purple" role="img" aria-hidden="true">👥</div>
               <div class="stat-label">Total Attendance</div>
               <div class="stat-value" id="statAttendance">67,842</div>
               <div class="stat-change up">↑ 94% capacity</div>
@@ -911,13 +911,12 @@
   </div><!-- /app-layout -->
 
   <!-- ========== SETTINGS MODAL ========== -->
-  <div class="modal-overlay" id="settingsModal">
+  <div class="modal-overlay" id="settingsModal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle" aria-hidden="true">
     <div class="modal-content">
-      <h2 class="modal-title">⚙️ Settings</h2>
+      <h2 class="modal-title" id="settingsTitle"><span role="img" aria-hidden="true">⚙️</span> Settings</h2>
       <div class="modal-field">
-        <label class="modal-label" for="apiKeyInput">Google Gemini API Key</label>
-        <input type="password" class="modal-input" id="apiKeyInput" placeholder="Enter your Gemini API key...">
-        <div class="modal-hint">Required for AI chat and translation features. Your key is stored locally and never shared. Get one at <a href="https://aistudio.google.com/apikey" target="_blank">aistudio.google.com</a></div>
+        <div class="modal-label">AI Features</div>
+        <div class="modal-hint" style="margin-top: var(--space-2);">AI chat and translation features are configured server-side via the <code>GEMINI_API_KEY</code> environment variable. See <code>.env.example</code> for setup instructions. No API key is needed in the browser.</div>
       </div>
       <div class="modal-field">
         <label class="modal-label" for="stadiumSelect">Stadium</label>
@@ -947,7 +946,7 @@
   </div>
 
   <!-- Toast Container -->
-  <div class="toast-container" id="toastContainer"></div>
+  <div class="toast-container" id="toastContainer" aria-live="polite" aria-atomic="false"></div>
 
   <!-- Scripts -->
   <script src="dashboard-data.js"></script>

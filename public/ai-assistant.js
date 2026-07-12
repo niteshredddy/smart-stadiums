@@ -1,118 +1,66 @@
 /* ============================================================
-   StadiumAI Hub — AI Assistant (Gemini Integration)
-   Google Gemini API integration with system prompt engineering,
-   multi-turn conversation, multilingual support, and fallbacks
+   StadiumAI Hub — AI Assistant (Server Proxy Integration)
+   Routes all AI requests through the backend proxy /api/ai/chat.
+   API key is stored server-side in .env — never exposed to browser.
    ============================================================ */
 
 const AIAssistant = (() => {
-  let apiKey = '';
   let conversationHistory = [];
   let isProcessing = false;
 
-  // System prompt for FIFA World Cup 2026 context
-  const SYSTEM_PROMPT = `You are StadiumAI, an intelligent, friendly, and multilingual AI assistant for the FIFA World Cup 2026. You are deployed inside stadiums across the USA, Mexico, and Canada to help fans, staff, volunteers, and organizers.
-
-Your capabilities:
-1. **Navigation**: Help fans find their seats, restrooms, food courts, first aid, merchandise stores, and exits. Use section/gate naming (e.g., "Gate A", "Section B3", "Level 2 Concourse").
-2. **Crowd Management**: Report current crowd density, suggest less crowded routes, warn about congestion zones.
-3. **Accessibility**: Provide wheelchair-accessible routes, elevator locations, accessible seating, sensory rooms, and assistance services.
-4. **Transportation**: Advise on parking availability, metro/shuttle schedules, rideshare options, and optimal departure timing.
-5. **Sustainability**: Share recycling station locations, water refill stations, eco-friendly options.
-6. **Match Info**: Current scores, upcoming matches, team lineups, and tournament bracket info.
-7. **Multilingual**: Respond in whatever language the user writes in. Support English, Spanish, French, Arabic, Portuguese, German, Japanese, Korean, Chinese, Hindi, and more.
-8. **Emergency**: For medical emergencies, direct to nearest first aid and provide emergency contact info. Always prioritize safety.
-
-Current context:
-- Venue: MetLife Stadium, New Jersey
-- Current match: Brazil vs Germany (Group Stage), 67th minute, Score: 2-1
-- Weather: 75°F (24°C), clear skies
-- Stadium capacity: 82,500 | Current attendance: ~67,800 (94%)
-- ${typeof CrowdData !== 'undefined' ? CrowdData.getCrowdContext() : 'Crowd data loading...'}
-
-Guidelines:
-- Be concise but helpful (2-4 sentences ideal for simple queries)
-- Use emoji sparingly but effectively for visual clarity
-- For directions, be specific with landmarks and gate references
-- If you don't know something, say so honestly
-- Always prioritize safety in any emergency situation
-- Respond in the same language the user uses`;
+  // System prompt for FIFA World Cup 2026 context (used for fallback only)
+  const SYSTEM_PROMPT = `You are StadiumAI, an intelligent, friendly, and multilingual AI assistant for the FIFA World Cup 2026.`;
 
   // Initialize
   function init() {
-    apiKey = localStorage.getItem('stadiumai_api_key') || '';
+    // No API key needed on client — handled server-side
   }
 
-  // Set API key
-  function setApiKey(key) {
-    apiKey = key;
-    localStorage.setItem('stadiumai_api_key', key);
-  }
-
-  // Get API key
-  function getApiKey() {
-    return apiKey;
-  }
-
-  // Check if API key is configured
+  // Check if AI is available (always attempt via proxy)
   function hasApiKey() {
-    return apiKey && apiKey.trim().length > 10;
+    return true; // Proxy handles key presence check
   }
 
-  // Send message to Gemini API
+  // Send message via backend proxy
   async function sendMessage(userMessage, language = 'en') {
     if (isProcessing) return null;
     isProcessing = true;
 
-    // Add user message to history
+    // Add user message to local history
     conversationHistory.push({
       role: 'user',
       parts: [{ text: userMessage }]
     });
 
-    // If no API key, use fallback
-    if (!hasApiKey()) {
-      isProcessing = false;
-      const fallback = getFallbackResponse(userMessage, language);
-      conversationHistory.push({
-        role: 'model',
-        parts: [{ text: fallback }]
-      });
-      return fallback;
-    }
-
     try {
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            system_instruction: {
-              parts: [{ text: SYSTEM_PROMPT }]
-            },
-            contents: conversationHistory,
-            generationConfig: {
-              temperature: 0.7,
-              topP: 0.9,
-              topK: 40,
-              maxOutputTokens: 512,
-            },
-            safetySettings: [
-              { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_NONE' },
-              { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_NONE' },
-              { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_NONE' },
-              { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' },
-            ]
-          })
-        }
-      );
+      const response = await fetch('/api/ai/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: userMessage,
+          language,
+          conversationHistory: conversationHistory.slice(-16),
+        }),
+      });
 
       if (!response.ok) {
-        throw new Error(`API error: ${response.status}`);
+        throw new Error(`Proxy error: ${response.status}`);
       }
 
       const data = await response.json();
-      const aiText = data.candidates?.[0]?.content?.parts?.[0]?.text || 'I apologize, I could not process that request. Please try again.';
+
+      // If the server returned a fallback signal (no API key configured)
+      if (data.fallback) {
+        isProcessing = false;
+        const fallback = getFallbackResponse(userMessage, language);
+        conversationHistory.push({
+          role: 'model',
+          parts: [{ text: fallback }]
+        });
+        return fallback;
+      }
+
+      const aiText = data.reply || 'I apologize, I could not process that request. Please try again.';
 
       conversationHistory.push({
         role: 'model',
@@ -128,7 +76,7 @@ Guidelines:
       return aiText;
 
     } catch (error) {
-      console.error('Gemini API error:', error);
+      console.error('AI proxy error:', error);
       isProcessing = false;
 
       const fallback = getFallbackResponse(userMessage, language);
@@ -140,41 +88,27 @@ Guidelines:
     }
   }
 
-  // Translate text using Gemini
+  // Translate text via backend proxy
   async function translate(text, fromLang, toLang) {
-    if (!hasApiKey()) {
-      return getOfflineTranslation(text, fromLang, toLang);
-    }
-
     try {
-      const langNames = {
-        en: 'English', es: 'Spanish', fr: 'French', ar: 'Arabic',
-        pt: 'Portuguese', de: 'German', ja: 'Japanese', ko: 'Korean',
-        zh: 'Chinese', hi: 'Hindi'
-      };
+      const response = await fetch('/api/ai/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: `Translate the following text from ${fromLang} to ${toLang}. Only output the translation, nothing else. Context: This is in a FIFA World Cup 2026 stadium setting.\n\nText: ${text}`,
+          language: toLang,
+        }),
+      });
 
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{
-              role: 'user',
-              parts: [{ text: `Translate the following text from ${langNames[fromLang] || fromLang} to ${langNames[toLang] || toLang}. Only output the translation, nothing else. Context: This is in a FIFA World Cup 2026 stadium setting.\n\nText: ${text}` }]
-            }],
-            generationConfig: {
-              temperature: 0.3,
-              maxOutputTokens: 256,
-            }
-          })
-        }
-      );
-
-      if (!response.ok) throw new Error('Translation API error');
+      if (!response.ok) throw new Error('Translation proxy error');
 
       const data = await response.json();
-      return data.candidates?.[0]?.content?.parts?.[0]?.text || 'Translation unavailable';
+
+      if (data.fallback) {
+        return getOfflineTranslation(text, fromLang, toLang);
+      }
+
+      return data.reply || 'Translation unavailable';
 
     } catch (error) {
       console.error('Translation error:', error);
@@ -188,9 +122,9 @@ Guidelines:
 
     // Language-specific fallback greetings
     const greetings = {
-      en: "I'm currently running in demo mode. To enable full AI capabilities, please add your Gemini API key in Settings (⚙️). ",
-      es: "Estoy en modo demo. Para habilitar las capacidades completas de IA, agregue su clave API de Gemini en Configuración (⚙️). ",
-      fr: "Je suis en mode démo. Pour activer les capacités IA complètes, ajoutez votre clé API Gemini dans les Paramètres (⚙️). ",
+      en: "I'm currently running in demo mode. To enable full AI capabilities, ask your administrator to configure the Gemini API key on the server. ",
+      es: "Estoy en modo demo. Para habilitar las capacidades completas de IA, pida al administrador que configure la clave API de Gemini en el servidor. ",
+      fr: "Je suis en mode démo. Pour activer les capacités IA complètes, demandez à votre administrateur de configurer la clé API Gemini sur le serveur. ",
     };
 
     const prefix = greetings[language] || greetings.en;
@@ -247,17 +181,19 @@ Guidelines:
   // Offline translation fallback
   function getOfflineTranslation(text, fromLang, toLang) {
     // Check phrase database
-    const fromPhrases = DashboardData.phrases[fromLang];
-    const toPhrases = DashboardData.phrases[toLang];
+    if (typeof DashboardData !== 'undefined') {
+      const fromPhrases = DashboardData.phrases[fromLang];
+      const toPhrases = DashboardData.phrases[toLang];
 
-    if (fromPhrases && toPhrases) {
-      const idx = fromPhrases.findIndex(p => p.text.toLowerCase() === text.toLowerCase());
-      if (idx !== -1 && toPhrases[idx]) {
-        return toPhrases[idx].text;
+      if (fromPhrases && toPhrases) {
+        const idx = fromPhrases.findIndex(p => p.text.toLowerCase() === text.toLowerCase());
+        if (idx !== -1 && toPhrases[idx]) {
+          return toPhrases[idx].text;
+        }
       }
     }
 
-    return `[Demo mode] Translation from ${fromLang} to ${toLang} requires a Gemini API key. Add it in Settings (⚙️).`;
+    return `[Demo mode] Translation from ${fromLang} to ${toLang} requires the Gemini API key to be configured on the server.`;
   }
 
   // Clear conversation
@@ -272,8 +208,6 @@ Guidelines:
 
   return {
     init,
-    setApiKey,
-    getApiKey,
     hasApiKey,
     sendMessage,
     translate,

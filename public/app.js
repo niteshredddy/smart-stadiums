@@ -27,7 +27,9 @@
 
     // Update nav links
     document.querySelectorAll('.nav-link').forEach(link => {
-      link.classList.toggle('active', link.dataset.section === section);
+      const isActive = link.dataset.section === section;
+      link.classList.toggle('active', isActive);
+      link.setAttribute('aria-current', isActive ? 'page' : 'false');
     });
 
     // Update section panels
@@ -76,7 +78,9 @@
 
     // Update role buttons
     document.querySelectorAll('.role-btn').forEach(btn => {
-      btn.classList.toggle('active', btn.dataset.role === role);
+      const isActive = btn.dataset.role === role;
+      btn.classList.toggle('active', isActive);
+      btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
     });
 
     // Show/hide role-specific elements
@@ -137,6 +141,16 @@
     const isOpen = chatPanel.classList.toggle('open');
     // Close notification panel if open
     if (isOpen) notifPanel.classList.remove('open');
+
+    // Update aria-expanded
+    const chatToggleBtn = document.getElementById('chatToggleBtn');
+    if (chatToggleBtn) chatToggleBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+
+    // Focus management: focus chat input when opening
+    if (isOpen) {
+      const chatInput = document.getElementById('chatInput');
+      if (chatInput) setTimeout(() => chatInput.focus(), 300);
+    }
     
     // Trigger animation
     if (window.Animations) {
@@ -146,6 +160,11 @@
 
   function closeChat() {
     chatPanel.classList.remove('open');
+    const chatToggleBtn = document.getElementById('chatToggleBtn');
+    if (chatToggleBtn) {
+      chatToggleBtn.setAttribute('aria-expanded', 'false');
+      chatToggleBtn.focus(); // Return focus to toggle
+    }
   }
 
   async function sendChatMessage() {
@@ -189,8 +208,10 @@
       .replace(/\n/g, '<br>');
 
     const msgHTML = `
-      <div class="chat-message ${type}">
-        <div class="msg-avatar">${type === 'ai' ? '🤖' : '👤'}</div>
+      <div class="chat-message ${type}" role="log">
+        <div class="msg-avatar" role="img" aria-label="${type === 'ai' ? 'AI Assistant' : 'You'}">
+          ${type === 'ai' ? '🤖' : '👤'}
+        </div>
         <div>
           <div class="msg-bubble">${formatted}</div>
           <div class="msg-time">${timeStr}</div>
@@ -205,8 +226,10 @@
   function showTypingIndicator(container) {
     const typing = document.createElement('div');
     typing.className = 'chat-message ai';
+    typing.setAttribute('role', 'status');
+    typing.setAttribute('aria-label', 'AI is typing');
     typing.innerHTML = `
-      <div class="msg-avatar">🤖</div>
+      <div class="msg-avatar" role="img" aria-label="AI Assistant">🤖</div>
       <div class="typing-indicator">
         <div class="typing-dot"></div>
         <div class="typing-dot"></div>
@@ -222,6 +245,9 @@
   function toggleNotifications() {
     const isOpen = notifPanel.classList.toggle('open');
     if (isOpen) chatPanel.classList.remove('open');
+
+    const notifBtn = document.getElementById('notifBtn');
+    if (notifBtn) notifBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
     
     // Trigger animation
     if (window.Animations) {
@@ -232,10 +258,11 @@
   // ---- Settings Modal ----
   function openSettings() {
     settingsModal.classList.add('open');
-    const apiInput = document.getElementById('apiKeyInput');
-    if (apiInput) {
-      apiInput.value = AIAssistant.getApiKey();
-    }
+    settingsModal.setAttribute('aria-hidden', 'false');
+
+    // Focus the first interactive element in the modal
+    const firstInput = settingsModal.querySelector('select, input, button');
+    if (firstInput) setTimeout(() => firstInput.focus(), 300);
     
     // Trigger animation
     if (window.Animations) {
@@ -245,6 +272,11 @@
 
   function closeSettings() {
     settingsModal.classList.remove('open');
+    settingsModal.setAttribute('aria-hidden', 'true');
+
+    // Return focus to settings button
+    const settingsBtn = document.getElementById('settingsBtn');
+    if (settingsBtn) settingsBtn.focus();
     
     // Trigger animation
     if (window.Animations) {
@@ -253,14 +285,7 @@
   }
 
   function saveSettings() {
-    const apiInput = document.getElementById('apiKeyInput');
-    if (apiInput && apiInput.value.trim()) {
-      AIAssistant.setApiKey(apiInput.value.trim());
-      showToast('Settings saved! AI features enabled.', '✅');
-    } else {
-      AIAssistant.setApiKey('');
-      showToast('Settings saved. Running in demo mode.', '⚙️');
-    }
+    showToast('Settings saved!', '✅');
     closeSettings();
   }
 
@@ -271,10 +296,11 @@
 
     const toast = document.createElement('div');
     toast.className = 'toast';
+    toast.setAttribute('role', 'alert');
     toast.innerHTML = `
-      <span class="toast-icon">${icon}</span>
+      <span class="toast-icon" role="img" aria-hidden="true">${icon}</span>
       <span class="toast-message">${message}</span>
-      <button class="toast-close" onclick="this.parentElement.remove()">✕</button>
+      <button class="toast-close" onclick="this.parentElement.remove()" aria-label="Dismiss notification">✕</button>
     `;
     container.appendChild(toast);
 
@@ -312,17 +338,17 @@
   }
 
   // ---- Data Refresh Loop ----
+  // Only handles local simulation data that ISN'T fetched from server via polling.
+  // Server data (crowd density, gates, matches) comes via WSClient events.
   function startDataRefresh() {
     refreshInterval = setInterval(() => {
-      // Update crowd densities
+      // Update local simulation data
       CrowdData.updateDensities();
-
-      // Update overview stats
       DashboardData.updateOverviewStats();
       DashboardData.updateGates();
       DashboardData.updateParkingLots();
 
-      // Re-render active section
+      // Re-render active section with locally simulated data
       switch (currentSection) {
         case 'overview':
           CrowdData.renderHeatmap('miniHeatmap');
@@ -343,6 +369,33 @@
     }, 5000); // Update every 5 seconds
   }
 
+  // ---- Listen to WebSocket events for server-sourced data ----
+  function setupWSListeners() {
+    if (!window.WSClient) return;
+
+    window.WSClient.on('crowdUpdate', (data) => {
+      // Update UI when server sends crowd data
+      if (currentSection === 'overview') {
+        CrowdData.renderHeatmap('miniHeatmap');
+      } else if (currentSection === 'crowd') {
+        CrowdData.renderHeatmap('fullHeatmap');
+        CrowdData.updateStatsDisplay();
+      }
+    });
+
+    window.WSClient.on('gatesUpdate', (data) => {
+      if (currentSection === 'overview') {
+        DashboardData.renderGateBars('gateBars');
+      } else if (currentSection === 'crowd') {
+        DashboardData.renderGateBars('gateBarsFull');
+      }
+    });
+
+    window.WSClient.on('matchesUpdate', (data) => {
+      // Matches are mostly static HTML, but could be extended
+    });
+  }
+
   // ---- Auto-resize chat input ----
   function autoResizeInput(textarea) {
     textarea.style.height = 'auto';
@@ -351,10 +404,21 @@
 
   // ---- Event Listeners ----
   function bindEvents() {
-    // Navigation
+    // Navigation — keyboard accessible
     document.querySelectorAll('.nav-link').forEach(link => {
+      link.setAttribute('tabindex', '0');
+      link.setAttribute('role', 'button');
+
       link.addEventListener('click', () => {
         navigateTo(link.dataset.section);
+      });
+
+      // Keyboard: Enter and Space
+      link.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          navigateTo(link.dataset.section);
+        }
       });
     });
 
@@ -401,6 +465,11 @@
     document.getElementById('notifBtn')?.addEventListener('click', toggleNotifications);
     document.getElementById('notifCloseBtn')?.addEventListener('click', () => {
       notifPanel.classList.remove('open');
+      const notifBtn = document.getElementById('notifBtn');
+      if (notifBtn) {
+        notifBtn.setAttribute('aria-expanded', 'false');
+        notifBtn.focus();
+      }
     });
 
     // Settings
@@ -456,6 +525,9 @@
     // Bind all events
     bindEvents();
 
+    // Set up WebSocket listeners
+    setupWSListeners();
+
     // Render initial content
     const ticker = document.getElementById('tickerTrack');
     if (ticker) ticker.innerHTML = DashboardData.generateTickerHTML();
@@ -469,7 +541,7 @@
     // Apply role visibility
     switchRole('fan');
 
-    // Start live data updates
+    // Start live data updates (local simulation only)
     startDataRefresh();
 
     // Show welcome toast
